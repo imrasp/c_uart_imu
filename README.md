@@ -1,3 +1,32 @@
+
+C-UART IMU : recorder for MAV datasets
+========================
+
+1. installation
+```$xslt
+mkdir build 
+cd build 
+cmake ..
+make
+```
+
+2. configure setting in `config/config/yaml`
+```$xslt
+%YAML:1.0
+
+system.baudrate: 921600
+system.uart_name: /dev/ttyUSB0 
+system.record_path: record_data # folder name of dataset
+system.fps: 20 # desire frame rate
+system.sec: 60 # how long will you want to record
+system.cameraid: 0 # 0 for /dev/video0, 1 for /dev/video1, ...
+system.gpstime: 0 #use gps time 1:yes 0:no
+```
+3. run
+```$xslt
+./run.sh
+```
+
 C-UART Interface Example
 ========================
 
