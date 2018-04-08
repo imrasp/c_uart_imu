@@ -8,13 +8,14 @@
 
 #include <common/mavlink.h>
 #include "autopilot_interface.h"
+#include "configParam.h"
 
 #ifndef C_UART_INTERFACE_EXAMPLE_IMU_RECORDER_H
 #define C_UART_INTERFACE_EXAMPLE_IMU_RECORDER_H
 
 class IMU_Recorder{
 public:
-    IMU_Recorder(bool activate);
+    IMU_Recorder(ConfigParam *configParam_, bool activate);
     ~IMU_Recorder();
 
     void start(Autopilot_Interface *autopilot_interface_);
@@ -24,6 +25,8 @@ public:
     void record();
 
 private:
+    ConfigParam *configParam;
+
     bool active;
     bool time_to_exit;
     Autopilot_Interface *autopilot_interface;

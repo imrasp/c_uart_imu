@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     try {
         ConfigParam configParam(argc, argv);
         Log log(configParam.record_path);
-        IMU_Recorder imu_recorder(true);
+        IMU_Recorder imu_recorder(&configParam, true);
         Mavlink_Control mavlinkControl(&configParam, &imu_recorder);
         Camera_Recorder cameraRecorder(&configParam);
         if(bIMU){

@@ -4,7 +4,7 @@
 
 #include "imu_recorder.h"
 
-IMU_Recorder::IMU_Recorder(bool active_) : active(active_),time_to_exit(false) {
+IMU_Recorder::IMU_Recorder(ConfigParam *configParam_, bool active_) : active(active_),time_to_exit(false),configParam(configParam_) {
 
 }
 
