@@ -312,7 +312,7 @@ read_messages() {
                     current_messages.time_stamps.global_position_int = get_time_usec();
                     this_timestamps.global_position_int = current_messages.time_stamps.global_position_int;
 
-                    uint64_t unixreftime = get_unixtimereference(current_messages.global_position_int.time_usec);
+                    uint64_t unixreftime = get_unixtimereference(current_messages.global_position_int.time_boot_ms) * 1000; //milliseconds since system boot
                     timestampgps_ns = boost::lexical_cast<uint64_t>(
                             std::chrono::duration_cast<std::chrono::nanoseconds>(
                                     std::chrono::system_clock::now().time_since_epoch()).count());
