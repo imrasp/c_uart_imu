@@ -33,7 +33,7 @@ void IMU_Recorder::record(){
     // write out queue
     std::string sep = ",";
     ofstream datasetimu, datasetimu2, datasetimu3, datasetimu4, datasetimu5, datasetgps, datasetgpsned;
-    float gpsx, gpsy, gpsz;
+    double gpsx, gpsy, gpsz;
     geodetic_converter::GeodeticConverter *geodeticConverter = new geodetic_converter::GeodeticConverter();
 
     datasetimu2.open("./record_data/imu0_odroidunix.csv");
@@ -130,8 +130,7 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                                                                autopilot_interface->queueGPS.front().alt / 1000);
 
                 } else {
-                    geodeticConverter->geodetic2Ned(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7,
-                                                    autopilot_interface->queueGPS.front().alt / 1000, gpsx, gpsy, gpsz);
+                    geodeticConverter->geodetic2Ned(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7, (double)autopilot_interface->queueGPS.front().alt / 1000, gpsx, gpsy, gpsz);
 
                     datasetgpsned << autopilot_interface->queueGPSUnixRefTime.front() << sep
                                   << gpsx << sep << gpsy << sep << gpsz << endl;
