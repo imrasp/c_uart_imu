@@ -34,6 +34,7 @@ void IMU_Recorder::record(){
     std::string sep = ",";
     ofstream datasetimu, datasetimu2, datasetimu3, datasetimu4, datasetimu5, datasetgps, datasetgpsned;
     float gpsx, gpsy, gpsz;
+    GeodeticConverter geodeticConverter = new GeodeticConverter();
 
     datasetimu2.open("./record_data/imu0_odroidunix.csv");
     datasetimu3.open("./record_data/imu0_pixhawkms.csv");
@@ -126,9 +127,6 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
 
                 if (!geodeticConverter->isInitialised()) {
                     if (current_pose.x != 0) {
-                        init_nedx = current_pose.x;
-                        init_nedy = current_pose.y;
-                        init_nedz = current_pose.z;
                         geodeticConverter->initialiseReference(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7,
                                                                autopilot_interface->queueGPS.front().alt / 1000);
                     }
