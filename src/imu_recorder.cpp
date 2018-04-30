@@ -130,7 +130,7 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                                                                autopilot_interface->queueGPS.front().alt / 1000);
 
                 } else {
-                    geodeticConverter->geodetic2Ned(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7, (double)autopilot_interface->queueGPS.front().alt / 1000, gpsx, gpsy, gpsz);
+                    geodeticConverter->geodetic2Ned(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7, (double)autopilot_interface->queueGPS.front().alt / 1000, &gpsx, &gpsy, &gpsz);
 
                     datasetgpsned << autopilot_interface->queueGPSUnixRefTime.front() << sep
                                   << gpsx << sep << gpsy << sep << gpsz << endl;
