@@ -9,6 +9,7 @@ ENDIF()
 set(CMAKE_CXX_STANDARD 11)
 
 find_package(OpenCV REQUIRED)
+find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Qt5Gui)
 find_package(Qt5Core)
 find_package(Qt5Widgets)
@@ -38,6 +39,7 @@ set(SOURCE_FILES
 
 include_directories(
         ${CMAKE_SOURCE_DIR}/mavlink/include/mavlink/v1.0
+        ${EIGEN3_INCLUDE_DIR}
 )
 
 add_executable(c_uart_interface_example ${SOURCE_FILES})
@@ -55,4 +57,6 @@ target_link_libraries(
         opencv_core
         opencv_highgui
         opencv_calib3d
+
+        ${EIGEN3_LIBS}
 )
