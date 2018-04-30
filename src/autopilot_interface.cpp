@@ -213,6 +213,9 @@ Autopilot_Interface(Serial_Port *serial_port_) {
     unEmptyIMU = PTHREAD_COND_INITIALIZER;
     emptyIMU = PTHREAD_COND_INITIALIZER;
     mutexIMU = PTHREAD_MUTEX_INITIALIZER;
+    unEmptyGPS = PTHREAD_COND_INITIALIZER;
+    emptyGPS = PTHREAD_COND_INITIALIZER;
+    mutexGPS = PTHREAD_MUTEX_INITIALIZER;
 
     b_unixtimereference = false;
 
@@ -308,6 +311,20 @@ read_messages() {
                     mavlink_msg_global_position_int_decode(&message, &(current_messages.global_position_int));
                     current_messages.time_stamps.global_position_int = get_time_usec();
                     this_timestamps.global_position_int = current_messages.time_stamps.global_position_int;
+
+                    uint64_t unixreftime = get_unixtimereference(current_messages.global_position_int.time_usec);
+                    timestampgps_ns = boost::lexical_cast<uint64_t>(
+                            std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                    std::chrono::system_clock::now().time_since_epoch()).count());
+
+                    if(bTimeRef) {
+                        pthread_mutex_lock(&mutexGPS);
+                        queueGPS.push(current_messages.global_position_int);
+                        queueGPStime.push(timestampgps_ns);
+                        queueGPSUnixRefTime.push(unixreftime);
+                        pthread_cond_signal(&unEmptyGPS);
+                        pthread_mutex_unlock(&mutexGPS);
+                    }
                     break;
                 }
 

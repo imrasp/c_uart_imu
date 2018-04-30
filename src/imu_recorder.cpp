@@ -3,6 +3,7 @@
 // @djangogirl /Bangkok
 
 #include "imu_recorder.h"
+#include "location_manager.cpp"
 
 IMU_Recorder::IMU_Recorder(ConfigParam *configParam_, bool active_) : active(active_),time_to_exit(false),configParam(configParam_) {
 
@@ -31,7 +32,8 @@ void IMU_Recorder::start(Autopilot_Interface *autopilot_interface_) {
 void IMU_Recorder::record(){
     // write out queue
     std::string sep = ",";
-    ofstream datasetimu, datasetimu2, datasetimu3, datasetimu4, datasetimu5;
+    ofstream datasetimu, datasetimu2, datasetimu3, datasetimu4, datasetimu5, datasetgps, datasetgpsned;
+    float gpsx, gpsy, gpsz;
 
     datasetimu2.open("./record_data/imu0_odroidunix.csv");
     datasetimu3.open("./record_data/imu0_pixhawkms.csv");
@@ -40,6 +42,8 @@ void IMU_Recorder::record(){
         datasetimu.open("./record_data/imu0.csv");
         //datasetimu4.open("./record_data/imu0_odroidpixhawk.csv");
         datasetimu5.open("./record_data/imu0_odroidrefpixhawk.csv");
+        datasetgps.open("./record_data/gps0.csv");
+        datasetgpsned.open("./record_data/gpsned.csv");
     }
 
 
@@ -56,6 +60,8 @@ void IMU_Recorder::record(){
         datasetimu5 << "timestamp" << sep << "omega_x" << sep << "omega_y" << sep << "omega_z" << sep << "alpha_x"
                     << sep
                     << "alpha_y" << sep << "alpha_z" << "\n";
+        datasetgps << "timestamp" << sep << "lat" << sep << "lon" << sep << "alt" << "\n";
+        datasetgpsned << "timestamp" << sep << "gpsx" << sep << "gpsy" << sep << "gpsz" << "\n";
     }
 
     pthread_mutex_lock(&autopilot_interface->mutexIMU);
@@ -87,14 +93,14 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                    << autopilot_interface->queueIMU.front().xacc << sep
                    << autopilot_interface->queueIMU.front().yacc << sep
                    << autopilot_interface->queueIMU.front().zacc << endl;
-
-        datasetimu << timestamp_ns << sep
-                   << autopilot_interface->queueIMU.front().xgyro << sep
-                   << autopilot_interface->queueIMU.front().ygyro << sep
-                   << autopilot_interface->queueIMU.front().zgyro << sep
-                   << autopilot_interface->queueIMU.front().xacc << sep
-                   << autopilot_interface->queueIMU.front().yacc << sep
-                   << autopilot_interface->queueIMU.front().zacc << endl;
+        if (!configParam->gpstime) {
+            datasetimu << timestamp_ns << sep
+                       << autopilot_interface->queueIMU.front().xgyro << sep
+                       << autopilot_interface->queueIMU.front().ygyro << sep
+                       << autopilot_interface->queueIMU.front().zgyro << sep
+                       << autopilot_interface->queueIMU.front().xacc << sep
+                       << autopilot_interface->queueIMU.front().yacc << sep
+                       << autopilot_interface->queueIMU.front().zacc << endl;
 
 //        datasetimu4 << get_ns_time_ref_odroid(autopilot_interface->queueIMU.front().time_usec) << sep
 //                    << autopilot_interface->queueIMU.front().xgyro << sep
@@ -104,14 +110,40 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
 //                    << autopilot_interface->queueIMU.front().yacc << sep
 //                    << autopilot_interface->queueIMU.front().zacc << endl;
 
-        datasetimu5 << autopilot_interface->queueIMUUnixRefTime.front() << sep
-                    << autopilot_interface->queueIMU.front().xgyro << sep
-                    << autopilot_interface->queueIMU.front().ygyro << sep
-                    << autopilot_interface->queueIMU.front().zgyro << sep
-                    << autopilot_interface->queueIMU.front().xacc << sep
-                    << autopilot_interface->queueIMU.front().yacc << sep
-                    << autopilot_interface->queueIMU.front().zacc << endl;
+            datasetimu5 << autopilot_interface->queueIMUUnixRefTime.front() << sep
+                        << autopilot_interface->queueIMU.front().xgyro << sep
+                        << autopilot_interface->queueIMU.front().ygyro << sep
+                        << autopilot_interface->queueIMU.front().zgyro << sep
+                        << autopilot_interface->queueIMU.front().xacc << sep
+                        << autopilot_interface->queueIMU.front().yacc << sep
+                        << autopilot_interface->queueIMU.front().zacc << endl;
 
+            if(autopilot_interface->queueGPS.empty()) {
+                datasetgps << autopilot_interface->queueGPSUnixRefTime.front() << sep
+                           << autopilot_interface->queueGPS.front().lat << sep
+                           << autopilot_interface->queueGPS.front().lon << sep
+                           << autopilot_interface->queueGPS.front().alt << endl;
+
+                if (!geodeticConverter->isInitialised()) {
+                    if (current_pose.x != 0) {
+                        init_nedx = current_pose.x;
+                        init_nedy = current_pose.y;
+                        init_nedz = current_pose.z;
+                        geodeticConverter->initialiseReference(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7,
+                                                               autopilot_interface->queueGPS.front().alt / 1000);
+                    }
+
+                } else {
+                    geodeticConverter->geodetic2Ned(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7,
+                                                    autopilot_interface->queueGPS.front().alt / 1000, gpsx, gpsy, gpsz);
+
+                    datasetgpsned << autopilot_interface->queueGPSUnixRefTime.front() << sep
+                                  << gpsx << sep << gpsy << sep << gpsz << endl;
+                }
+            }
+
+
+        }
         autopilot_interface->queueIMU.pop();
         autopilot_interface->queueIMUtime.pop();
         autopilot_interface->queueIMUUnixRefTime.pop();

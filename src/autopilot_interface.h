@@ -311,12 +311,15 @@ public:
 	void goto_ned_positon();
 
     bool bTimeRef;
-    pthread_cond_t timeRef, noTimeRef, unEmptyIMU, emptyIMU;
-    pthread_mutex_t mutexTimeRef, mutexIMU;
+    pthread_cond_t timeRef, noTimeRef, unEmptyIMU, emptyIMU, unEmptyGPS, emptyGPS;
+    pthread_mutex_t mutexTimeRef, mutexIMU, mutexGPS;
 
     std::queue<mavlink_highres_imu_t> queueIMU;
-	std::queue<uint64_t> queueIMUtime, queueIMUUnixRefTime;
-	uint64_t timestampcamera_ns;
+	std::queue<uint64_t> queueIMUtime, queueIMUUnixRefTime, queueGPStime, queueGPSUnixRefTime;
+
+	std::queue<mavlink_global_position_int_t> queueGPS;
+
+	uint64_t timestampcamera_ns, timestampgps_ns;
 
     void set_unixtimereference(mavlink_system_time_t time);
 	uint64_t get_unixtimereference(uint32_t time);
