@@ -2,6 +2,9 @@
 // Created by rasp on 29/4/2561.
 //
 
+#include "math.h"
+#include <Eigen/Dense>
+
 namespace geodetic_converter {
 // Geodetic system parameters
     static double kSemimajorAxis = 6378137;
