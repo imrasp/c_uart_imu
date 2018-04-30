@@ -39,7 +39,7 @@ void IMU_Recorder::record(){
     datasetimu2.open("./record_data/imu0_odroidunix.csv");
     datasetimu3.open("./record_data/imu0_pixhawkms.csv");
 
-    if (!configParam->gpstime) {
+    if (configParam->gpstime) {
         datasetimu.open("./record_data/imu0.csv");
         //datasetimu4.open("./record_data/imu0_odroidpixhawk.csv");
         datasetimu5.open("./record_data/imu0_odroidrefpixhawk.csv");
@@ -53,7 +53,7 @@ void IMU_Recorder::record(){
     datasetimu3 << "timestamp" << sep << "omega_x" << sep << "omega_y" << sep << "omega_z" << sep << "alpha_x" << sep
                 << "alpha_y" << sep << "alpha_z" << "\n";
 
-    if (!configParam->gpstime) {
+    if (configParam->gpstime) {
         datasetimu << "timestamp" << sep << "omega_x" << sep << "omega_y" << sep << "omega_z" << sep << "alpha_x" << sep
                    << "alpha_y" << sep << "alpha_z" << "\n";
 //    datasetimu4 << "timestamp" << sep << "omega_x" << sep << "omega_y" << sep << "omega_z" << sep << "alpha_x" << sep
@@ -94,7 +94,7 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                    << autopilot_interface->queueIMU.front().xacc << sep
                    << autopilot_interface->queueIMU.front().yacc << sep
                    << autopilot_interface->queueIMU.front().zacc << endl;
-        if (!configParam->gpstime) {
+        if (configParam->gpstime) {
             datasetimu << timestamp_ns << sep
                        << autopilot_interface->queueIMU.front().xgyro << sep
                        << autopilot_interface->queueIMU.front().ygyro << sep
