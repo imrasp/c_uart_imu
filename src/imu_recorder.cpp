@@ -34,7 +34,7 @@ void IMU_Recorder::record(){
     std::string sep = ",";
     ofstream datasetimu, datasetimu2, datasetimu3, datasetimu4, datasetimu5, datasetgps, datasetgpsned;
     float gpsx, gpsy, gpsz;
-    geodetic_converter::GeodeticConverter geodeticConverter = new geodetic_converter::GeodeticConverter();
+    geodetic_converter::GeodeticConverter *geodeticConverter = new geodetic_converter::GeodeticConverter();
 
     datasetimu2.open("./record_data/imu0_odroidunix.csv");
     datasetimu3.open("./record_data/imu0_pixhawkms.csv");
