@@ -318,7 +318,7 @@ read_messages() {
                         pthread_mutex_lock(&mutexLocalPos);
                         queueLocalPos.push(current_messages.local_position_ned);
                         queueLocalPostime.push(timestampLocalPos_ns);
-                        queueLocalPosUnixRefTime.push(odometryunixreftimeunixreftime);
+                        queueLocalPosUnixRefTime.push(odometryunixreftime);
                         pthread_cond_signal(&unEmptyLocalPos);
                         pthread_mutex_unlock(&mutexLocalPos);
                     }
