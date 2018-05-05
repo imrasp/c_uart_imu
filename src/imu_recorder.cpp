@@ -142,17 +142,21 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
             }
 
             // record imu position as a ground truth
-            if(autopilot_interface->queueLOdometry.empty()) {
-                datasetOdometry << autopilot_interface->queueLocalPosUnixRefTime.front() << sep
-                           << autopilot_interface->queueLOdometry.front().x << sep
-                           << autopilot_interface->queueLOdometry.front().y << sep
-                           << autopilot_interface->queueLOdometry.front().z << sep
-                           << autopilot_interface->queueLOdometry.front().q(0) << sep
-                           << autopilot_interface->queueLOdometry.front().q(1) << sep
-                           << autopilot_interface->queueLOdometry.front().q(2) << sep
-                           << autopilot_interface->queueLOdometry.front().q(3) << endl;
+            if(autopilot_interface->queueOdometry.empty()) {
+                datasetOdometry << autopilot_interface->queueOdometryUnixRefTime.front() << sep
+                           << autopilot_interface->queueOdometry.front().x << sep
+                           << autopilot_interface->queueOdometry.front().y << sep
+                           << autopilot_interface->queueOdometry.front().z << sep
+                           << autopilot_interface->queueOdometry.front().q(0) << sep
+                           << autopilot_interface->queueOdometry.front().q(1) << sep
+                           << autopilot_interface->queueOdometry.front().q(2) << sep
+                           << autopilot_interface->queueOdometry.front().q(3) << endl;
             }
 
+            autopilot_interface->queueOdometry.pop();
+            autopilot_interface->queueOdometryUnixRefTime.pop();
+            autopilot_interface->queueGPS.pop();
+            autopilot_interface->queueGPSUnixRefTime.pop();
 
         }
         autopilot_interface->queueIMU.pop();
