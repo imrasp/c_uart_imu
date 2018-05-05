@@ -147,7 +147,7 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                            << autopilot_interface->queueOdometry.front().x << sep
                            << autopilot_interface->queueOdometry.front().y << sep
                            << autopilot_interface->queueOdometry.front().z << sep
-                           << autopilot_interface->queueOdometry.front().q(0) << sep
+                           << autopilot_interface->queueOdometry.front().q[0] << sep
                            << autopilot_interface->queueOdometry.front().q(1) << sep
                            << autopilot_interface->queueOdometry.front().q(2) << sep
                            << autopilot_interface->queueOdometry.front().q(3) << endl;
