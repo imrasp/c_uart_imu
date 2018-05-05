@@ -216,7 +216,12 @@ Autopilot_Interface(Serial_Port *serial_port_) {
     unEmptyGPS = PTHREAD_COND_INITIALIZER;
     emptyGPS = PTHREAD_COND_INITIALIZER;
     mutexGPS = PTHREAD_MUTEX_INITIALIZER;
-
+    unEmptyLocalPos = PTHREAD_COND_INITIALIZER;
+    emptyLocalPos = PTHREAD_COND_INITIALIZER;
+    mutexLocalPos = PTHREAD_MUTEX_INITIALIZER;
+    unEmptyOdometry= PTHREAD_COND_INITIALIZER;
+    emptyOdometry = PTHREAD_COND_INITIALIZER;
+    mutexOdometry = PTHREAD_MUTEX_INITIALIZER;
     b_unixtimereference = false;
 
 }
@@ -303,6 +308,21 @@ read_messages() {
                     mavlink_msg_local_position_ned_decode(&message, &(current_messages.local_position_ned));
                     current_messages.time_stamps.local_position_ned = get_time_usec();
                     this_timestamps.local_position_ned = current_messages.time_stamps.local_position_ned;
+
+                    uint64_t odometryunixreftime = get_unixtimereference(current_messages.local_position_ned.time_boot_ms) * 1000; //milliseconds since system boot
+                    timestampLocalPos_ns = boost::lexical_cast<uint64_t>(
+                            std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                    std::chrono::system_clock::now().time_since_epoch()).count());
+
+                    if(bTimeRef) {
+                        pthread_mutex_lock(&mutexLocalPos);
+                        queueLocalPos.push(current_messages.local_position_ned);
+                        queueLocalPostime.push(timestampLocalPos_ns);
+                        queueLocalPosUnixRefTime.push(odometryunixreftimeunixreftime);
+                        pthread_cond_signal(&unEmptyLocalPos);
+                        pthread_mutex_unlock(&mutexLocalPos);
+                    }
+
                     break;
                 }
 
@@ -312,7 +332,7 @@ read_messages() {
                     current_messages.time_stamps.global_position_int = get_time_usec();
                     this_timestamps.global_position_int = current_messages.time_stamps.global_position_int;
 
-                    uint64_t unixreftime = get_unixtimereference(current_messages.global_position_int.time_boot_ms) * 1000; //milliseconds since system boot
+                    uint64_t gpsunixreftime = get_unixtimereference(current_messages.global_position_int.time_boot_ms) * 1000; //milliseconds since system boot
                     timestampgps_ns = boost::lexical_cast<uint64_t>(
                             std::chrono::duration_cast<std::chrono::nanoseconds>(
                                     std::chrono::system_clock::now().time_since_epoch()).count());
@@ -321,7 +341,7 @@ read_messages() {
                         pthread_mutex_lock(&mutexGPS);
                         queueGPS.push(current_messages.global_position_int);
                         queueGPStime.push(timestampgps_ns);
-                        queueGPSUnixRefTime.push(unixreftime);
+                        queueGPSUnixRefTime.push(gpsunixreftime);
                         pthread_cond_signal(&unEmptyGPS);
                         pthread_mutex_unlock(&mutexGPS);
                     }
@@ -379,6 +399,7 @@ read_messages() {
                     this_timestamps.attitude = current_messages.time_stamps.attitude;
                     break;
                 }
+
                 case MAVLINK_MSG_ID_HOME_POSITION: {
                     //printf("MAVLINK_MSG_ID_HOME_POSITION\n");
                     mavlink_msg_home_position_decode(&message, &(current_messages.home_position));
@@ -386,6 +407,30 @@ read_messages() {
                     this_timestamps.home_position = current_messages.time_stamps.home_position;
                     break;
                 }
+                //odometry
+                case MAVLINK_MSG_ID_ODOMETRY: { //331
+                    //printf("MAVLINK_MSG_ID_ODOMETRY\n");
+                    mavlink_msg_odometry_decode(&message, &(current_messages.odometry));
+                    current_messages.time_stamps.odometry = get_time_usec();
+                    this_timestamps.odometry = current_messages.time_stamps.odometry;
+
+                    uint64_t odometryunixreftime = get_unixtimereference(current_messages.odometry.time_usec); //microseconds since system boot
+                    timestampOdometry_ns = boost::lexical_cast<uint64_t>(
+                            std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                    std::chrono::system_clock::now().time_since_epoch()).count());
+
+                    if(bTimeRef) {
+                        pthread_mutex_lock(&mutexOdometry);
+                        queueOdometry.push(current_messages.odometry);
+                        queueOdometrytime.push(timestampOdometry_ns);
+                        queueOdometryUnixRefTime.push(odometryunixreftime);
+                        pthread_cond_signal(&unEmptyOdometry);
+                        pthread_mutex_unlock(&mutexOdometry);
+                    }
+
+                    break;
+                }
+
                 case MAVLINK_MSG_ID_SYSTEM_TIME: {
                     mavlink_msg_system_time_decode(&message, &(current_messages.system_time));
                     current_messages.time_stamps.system_time = get_time_usec();

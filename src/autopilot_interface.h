@@ -160,6 +160,7 @@ struct Time_Stamps
 	uint64_t attitude;
 	uint64_t home_position;
 	uint64_t system_time;
+	uint64_t odometry;
 
 	void
 	reset_timestamps()
@@ -176,6 +177,7 @@ struct Time_Stamps
 		attitude = 0;
 		home_position = 0;
         system_time = 0;
+		odometry = 0;
 	}
 
 };
@@ -217,6 +219,9 @@ struct Mavlink_Messages {
 
 	// Attitude
 	mavlink_attitude_t attitude;
+
+	// odometry
+	mavlink_odometry_t odometry;
 
 	// Home Position
     	mavlink_home_position_t home_position;
@@ -311,15 +316,23 @@ public:
 	void goto_ned_positon();
 
     bool bTimeRef;
-    pthread_cond_t timeRef, noTimeRef, unEmptyIMU, emptyIMU, unEmptyGPS, emptyGPS;
-    pthread_mutex_t mutexTimeRef, mutexIMU, mutexGPS;
+    pthread_cond_t timeRef, noTimeRef, unEmptyIMU, emptyIMU,
+			unEmptyGPS, emptyGPS,
+			unEmptyLocalPos, emptyLocalPos,
+			unEmptyOdometry, emptyOdometry;
+    pthread_mutex_t mutexTimeRef, mutexIMU, mutexGPS, mutexLocalPos, mutexOdometry;
 
     std::queue<mavlink_highres_imu_t> queueIMU;
-	std::queue<uint64_t> queueIMUtime, queueIMUUnixRefTime, queueGPStime, queueGPSUnixRefTime;
-
 	std::queue<mavlink_global_position_int_t> queueGPS;
+	std::queue<mavlink_local_position_ned_t> queueLocalPos;
+	std::queue<mavlink_odometry_t> queueOdometry;
 
-	uint64_t timestampcamera_ns, timestampgps_ns;
+	std::queue<uint64_t> queueIMUtime, queueIMUUnixRefTime,
+			queueGPStime, queueGPSUnixRefTime,
+			queueLocalPostime, queueLocalPosUnixRefTime,
+			queueOdometrytime, queueOdometryUnixRefTime;
+
+	uint64_t timestampcamera_ns, timestampgps_ns, timestampLocalPos_ns, timestampOdometry_ns;
 
     void set_unixtimereference(mavlink_system_time_t time);
 	uint64_t get_unixtimereference(uint32_t time);

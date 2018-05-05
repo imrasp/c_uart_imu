@@ -32,7 +32,7 @@ void IMU_Recorder::start(Autopilot_Interface *autopilot_interface_) {
 void IMU_Recorder::record(){
     // write out queue
     std::string sep = ",";
-    ofstream datasetimu, datasetimu2, datasetimu3, datasetimu4, datasetimu5, datasetgps, datasetgpsned;
+    ofstream datasetimu, datasetimu2, datasetimu3, datasetimu4, datasetimu5, datasetgps, datasetgpsned, datasetOdometry;
     double gpsx, gpsy, gpsz;
     geodetic_converter::GeodeticConverter *geodeticConverter = new geodetic_converter::GeodeticConverter();
 
@@ -45,6 +45,7 @@ void IMU_Recorder::record(){
         datasetimu5.open("./record_data/imu0_odroidrefpixhawk.csv");
         datasetgps.open("./record_data/gps0.csv");
         datasetgpsned.open("./record_data/gpsned.csv");
+        datasetOdometry.open("./record_data/odometry.csv");
     }
 
 
@@ -63,6 +64,8 @@ void IMU_Recorder::record(){
                     << "alpha_y" << sep << "alpha_z" << "\n";
         datasetgps << "timestamp" << sep << "lat" << sep << "lon" << sep << "alt" << "\n";
         datasetgpsned << "timestamp" << sep << "gpsx" << sep << "gpsy" << sep << "gpsz" << "\n";
+        datasetOdometry << "timestamp" << sep << "tx" << sep << "ty" << sep << "tz" << sep
+                        << "qx" << sep << "qy" << sep << "qz" << sep << "qw" << "\n";
     }
 
     pthread_mutex_lock(&autopilot_interface->mutexIMU);
@@ -119,6 +122,7 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                         << autopilot_interface->queueIMU.front().yacc << sep
                         << autopilot_interface->queueIMU.front().zacc << endl;
 
+            // record gps as a ground truth
             if(autopilot_interface->queueGPS.empty()) {
                 datasetgps << autopilot_interface->queueGPSUnixRefTime.front() << sep
                            << autopilot_interface->queueGPS.front().lat << sep
@@ -135,6 +139,18 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                     datasetgpsned << autopilot_interface->queueGPSUnixRefTime.front() << sep
                                   << gpsx << sep << gpsy << sep << gpsz << endl;
                 }
+            }
+
+            // record imu position as a ground truth
+            if(autopilot_interface->queueLOdometry.empty()) {
+                datasetOdometry << autopilot_interface->queueLocalPosUnixRefTime.front() << sep
+                           << autopilot_interface->queueLOdometry.front().x << sep
+                           << autopilot_interface->queueLOdometry.front().y << sep
+                           << autopilot_interface->queueLOdometry.front().z << sep
+                           << autopilot_interface->queueLOdometry.front().q(0) << sep
+                           << autopilot_interface->queueLOdometry.front().q(1) << sep
+                           << autopilot_interface->queueLOdometry.front().q(2) << sep
+                           << autopilot_interface->queueLOdometry.front().q(3) << endl;
             }
 
 
