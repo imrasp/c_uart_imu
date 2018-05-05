@@ -38,7 +38,7 @@ set(SOURCE_FILES
         src/location_manager.cpp)
 
 include_directories(
-        ${CMAKE_SOURCE_DIR}/mavlink/include/mavlink/v1.0
+        ${CMAKE_SOURCE_DIR}/mavlink_new/include/mavlink/v1.0
         ${EIGEN3_INCLUDE_DIR}
 )
 
