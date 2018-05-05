@@ -137,11 +137,14 @@ void Mavlink_Control::start() {
                         std::chrono::system_clock::now().time_since_epoch()).count());
         cout << "waiting for time reference\n";
         cout << "current_unix_time(" << current_unix_time <<")  - sys_time.time_unix_usec(" << sys_time.time_unix_usec <<") = " << abs(current_unix_time - sys_time.time_unix_usec) << "\n";
-        if (abs(current_unix_time - sys_time.time_unix_usec) < 100000000 && !configParam->gpstime ) {
-            imu_recorder->set_ref_time(autopilot_interface->current_messages.system_time);
-            imu_recorder->start(autopilot_interface);
-            cout << "set time referenced = " << autopilot_interface->bTimeRef << "!! \n";
-            autopilot_interface->bTimeRef = true;
+        if(!configParam->gpstime )
+        {
+            if (abs(current_unix_time - sys_time.time_unix_usec < 100000000 ) {
+                imu_recorder->set_ref_time(autopilot_interface->current_messages.system_time);
+                imu_recorder->start(autopilot_interface);
+                cout << "set time referenced = " << autopilot_interface->bTimeRef << "!! \n";
+                autopilot_interface->bTimeRef = true;
+            }
         }
         pthread_cond_signal(&autopilot_interface->noTimeRef);
     }
