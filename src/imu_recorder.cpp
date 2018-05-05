@@ -152,13 +152,12 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                            << autopilot_interface->queueOdometry.front().q[2] << sep
                            << autopilot_interface->queueOdometry.front().q[3] << endl;
             }
-
             autopilot_interface->queueOdometry.pop();
             autopilot_interface->queueOdometryUnixRefTime.pop();
             autopilot_interface->queueGPS.pop();
             autopilot_interface->queueGPSUnixRefTime.pop();
-
         }
+
         autopilot_interface->queueIMU.pop();
         autopilot_interface->queueIMUtime.pop();
         autopilot_interface->queueIMUUnixRefTime.pop();
