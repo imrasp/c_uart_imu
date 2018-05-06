@@ -162,8 +162,8 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
             }
 //            autopilot_interface->queueOdometry.pop();
 //            autopilot_interface->queueOdometryUnixRefTime.pop();
-//            autopilot_interface->queueGPS.pop();
-//            autopilot_interface->queueGPSUnixRefTime.pop();
+            autopilot_interface->queueGPS.pop();
+            autopilot_interface->queueGPSUnixRefTime.pop();
         }
 
         autopilot_interface->queueIMU.pop();
