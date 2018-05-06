@@ -125,24 +125,24 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
             // record gps as a ground truth
             if(autopilot_interface->queueGPS.empty()) {
 //
-//                uint64_t gps_timestamp_ms = ref_system_time.time_unix_usec + ((autopilot_interface->queueGPS.front().time_boot_ms - ref_system_time.time_boot_ms) * 1000);
-//                uint64_t gps_timestamp_ns = timestamp_ms * 1000;
-//
-//                datasetgps << gps_timestamp_ns << sep
-//                           << autopilot_interface->queueGPS.front().lat << sep
-//                           << autopilot_interface->queueGPS.front().lon << sep
-//                           << autopilot_interface->queueGPS.front().alt << endl;
-//
-//                if (!geodeticConverter->isInitialised()) {
-//                        geodeticConverter->initialiseReference(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7,
-//                                                               autopilot_interface->queueGPS.front().alt / 1000);
-//
-//                } else {
-//                    geodeticConverter->geodetic2Ned(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7, (double)autopilot_interface->queueGPS.front().alt / 1000, &gpsx, &gpsy, &gpsz);
-//
-//                    datasetgpsned << autopilot_interface->queueGPSUnixRefTime.front() << sep
-//                                  << gpsx << sep << gpsy << sep << gpsz << endl;
-//                }
+                uint64_t gps_timestamp_ms = ref_system_time.time_unix_usec + ((autopilot_interface->queueGPS.front().time_boot_ms - ref_system_time.time_boot_ms) * 1000);
+                uint64_t gps_timestamp_ns = timestamp_ms * 1000;
+
+                datasetgps << gps_timestamp_ns << sep
+                           << autopilot_interface->queueGPS.front().lat << sep
+                           << autopilot_interface->queueGPS.front().lon << sep
+                           << autopilot_interface->queueGPS.front().alt << endl;
+
+                if (!geodeticConverter->isInitialised()) {
+                        geodeticConverter->initialiseReference(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7,
+                                                               autopilot_interface->queueGPS.front().alt / 1000);
+
+                } else {
+                    geodeticConverter->geodetic2Ned(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7, (double)autopilot_interface->queueGPS.front().alt / 1000, &gpsx, &gpsy, &gpsz);
+
+                    datasetgpsned << autopilot_interface->queueGPSUnixRefTime.front() << sep
+                                  << gpsx << sep << gpsy << sep << gpsz << endl;
+                }
             }
 //
             // record imu position as a ground truth
