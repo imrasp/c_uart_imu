@@ -122,8 +122,8 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                         << autopilot_interface->queueIMU.front().yacc << sep
                         << autopilot_interface->queueIMU.front().zacc << endl;
 //
-//            // record gps as a ground truth
-//            if(autopilot_interface->queueGPS.empty()) {
+            // record gps as a ground truth
+            if(autopilot_interface->queueGPS.empty()) {
 //
 //                uint64_t gps_timestamp_ms = ref_system_time.time_unix_usec + ((autopilot_interface->queueGPS.front().time_boot_ms - ref_system_time.time_boot_ms) * 1000);
 //                uint64_t gps_timestamp_ns = timestamp_ms * 1000;
@@ -143,10 +143,10 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
 //                    datasetgpsned << autopilot_interface->queueGPSUnixRefTime.front() << sep
 //                                  << gpsx << sep << gpsy << sep << gpsz << endl;
 //                }
-//            }
+            }
 //
-//            // record imu position as a ground truth
-//            if(autopilot_interface->queueOdometry.empty()) {
+            // record imu position as a ground truth
+            if(autopilot_interface->queueOdometry.empty()) {
 //
 //                uint64_t gps_timestamp_ms = ref_system_time.time_unix_usec + (autopilot_interface->queueOdometry.front().time_usec - (ref_system_time.time_boot_ms * 1000));
 //                uint64_t gps_timestamp_ns = timestamp_ms * 1000;
@@ -159,7 +159,7 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
 //                           << autopilot_interface->queueOdometry.front().q[1] << sep
 //                           << autopilot_interface->queueOdometry.front().q[2] << sep
 //                           << autopilot_interface->queueOdometry.front().q[3] << endl;
-//            }
+            }
 //            autopilot_interface->queueOdometry.pop();
 //            autopilot_interface->queueOdometryUnixRefTime.pop();
 //            autopilot_interface->queueGPS.pop();
