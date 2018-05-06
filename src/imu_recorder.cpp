@@ -124,7 +124,11 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
 
             // record gps as a ground truth
             if(autopilot_interface->queueGPS.empty()) {
-                datasetgps << autopilot_interface->queueGPSUnixRefTime.front() << sep
+
+                uint64_t gps_timestamp_ms = ref_system_time.time_unix_usec + ((autopilot_interface->queueGPS.front().time_boot_ms - ref_system_time.time_boot_ms) * 1000);
+                uint64_t gps_timestamp_ns = timestamp_ms * 1000;
+
+                datasetgps << gps_timestamp_ns << sep
                            << autopilot_interface->queueGPS.front().lat << sep
                            << autopilot_interface->queueGPS.front().lon << sep
                            << autopilot_interface->queueGPS.front().alt << endl;
@@ -143,6 +147,10 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
 
             // record imu position as a ground truth
             if(autopilot_interface->queueOdometry.empty()) {
+
+                uint64_t gps_timestamp_ms = ref_system_time.time_unix_usec + (autopilot_interface->queueOdometry.front().time_usec - (ref_system_time.time_boot_ms * 1000));
+                uint64_t gps_timestamp_ns = timestamp_ms * 1000;
+
                 datasetOdometry << autopilot_interface->queueOdometryUnixRefTime.front() << sep
                            << autopilot_interface->queueOdometry.front().x << sep
                            << autopilot_interface->queueOdometry.front().y << sep
