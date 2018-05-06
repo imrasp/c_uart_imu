@@ -74,29 +74,29 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
 
 
     while (!time_to_exit){// || !autopilot_interface->queueIMU.empty()) {
-//        pthread_mutex_lock(&autopilot_interface->mutexIMU);
-//        if(autopilot_interface->queueIMU.empty())
-//            pthread_cond_wait(&autopilot_interface->unEmptyIMU, &autopilot_interface->mutexIMU);
-//
-//        uint64_t timestamp_ms = ref_system_time.time_unix_usec + (autopilot_interface->queueIMU.front().time_usec -
-//                                                                  (ref_system_time.time_boot_ms * 1000));
-//        uint64_t timestamp_ns = timestamp_ms * 1000;
-//
-//        datasetimu2 << autopilot_interface->queueIMUtime.front() << sep
-//                   << autopilot_interface->queueIMU.front().xgyro << sep
-//                   << autopilot_interface->queueIMU.front().ygyro << sep
-//                   << autopilot_interface->queueIMU.front().zgyro << sep
-//                   << autopilot_interface->queueIMU.front().xacc << sep
-//                   << autopilot_interface->queueIMU.front().yacc << sep
-//                   << autopilot_interface->queueIMU.front().zacc << endl;
-//
-//        datasetimu3 << autopilot_interface->queueIMU.front().time_usec << sep
-//                   << autopilot_interface->queueIMU.front().xgyro << sep
-//                   << autopilot_interface->queueIMU.front().ygyro << sep
-//                   << autopilot_interface->queueIMU.front().zgyro << sep
-//                   << autopilot_interface->queueIMU.front().xacc << sep
-//                   << autopilot_interface->queueIMU.front().yacc << sep
-//                   << autopilot_interface->queueIMU.front().zacc << endl;
+        pthread_mutex_lock(&autopilot_interface->mutexIMU);
+        if(autopilot_interface->queueIMU.empty())
+            pthread_cond_wait(&autopilot_interface->unEmptyIMU, &autopilot_interface->mutexIMU);
+
+        uint64_t timestamp_ms = ref_system_time.time_unix_usec + (autopilot_interface->queueIMU.front().time_usec -
+                                                                  (ref_system_time.time_boot_ms * 1000));
+        uint64_t timestamp_ns = timestamp_ms * 1000;
+
+        datasetimu2 << autopilot_interface->queueIMUtime.front() << sep
+                   << autopilot_interface->queueIMU.front().xgyro << sep
+                   << autopilot_interface->queueIMU.front().ygyro << sep
+                   << autopilot_interface->queueIMU.front().zgyro << sep
+                   << autopilot_interface->queueIMU.front().xacc << sep
+                   << autopilot_interface->queueIMU.front().yacc << sep
+                   << autopilot_interface->queueIMU.front().zacc << endl;
+
+        datasetimu3 << autopilot_interface->queueIMU.front().time_usec << sep
+                   << autopilot_interface->queueIMU.front().xgyro << sep
+                   << autopilot_interface->queueIMU.front().ygyro << sep
+                   << autopilot_interface->queueIMU.front().zgyro << sep
+                   << autopilot_interface->queueIMU.front().xacc << sep
+                   << autopilot_interface->queueIMU.front().yacc << sep
+                   << autopilot_interface->queueIMU.front().zacc << endl;
 //        if (configParam->gpstime) {
 //            datasetimu << timestamp_ns << sep
 //                       << autopilot_interface->queueIMU.front().xgyro << sep
@@ -165,11 +165,11 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
 //            autopilot_interface->queueGPS.pop();
 //            autopilot_interface->queueGPSUnixRefTime.pop();
 //        }
-//
-//        autopilot_interface->queueIMU.pop();
-//        autopilot_interface->queueIMUtime.pop();
-//        autopilot_interface->queueIMUUnixRefTime.pop();
-//        pthread_mutex_unlock(&autopilot_interface->mutexIMU);
+
+        autopilot_interface->queueIMU.pop();
+        autopilot_interface->queueIMUtime.pop();
+        autopilot_interface->queueIMUUnixRefTime.pop();
+        pthread_mutex_unlock(&autopilot_interface->mutexIMU);
     }
 }
 
