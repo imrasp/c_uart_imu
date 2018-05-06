@@ -140,7 +140,7 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                 } else {
                     geodeticConverter->geodetic2Ned(autopilot_interface->queueGPS.front().lat / 1e7, autopilot_interface->queueGPS.front().lon / 1e7, (double)autopilot_interface->queueGPS.front().alt / 1000, &gpsx, &gpsy, &gpsz);
 
-                    datasetgpsned << autopilot_interface->queueGPSUnixRefTime.front() << sep
+                    datasetgpsned << autopilot_interface->gps_timestamp_ns << sep
                                   << gpsx << sep << gpsy << sep << gpsz << endl;
                 }
             }
@@ -163,7 +163,7 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
 //            autopilot_interface->queueOdometry.pop();
 //            autopilot_interface->queueOdometryUnixRefTime.pop();
             autopilot_interface->queueGPS.pop();
-            autopilot_interface->queueGPSUnixRefTime.pop();
+//            autopilot_interface->queueGPSUnixRefTime.pop();
         }
 
         autopilot_interface->queueIMU.pop();
