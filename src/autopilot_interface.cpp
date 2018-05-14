@@ -409,7 +409,7 @@ read_messages() {
                     this_timestamps.attitude = current_messages.time_stamps.attitude;
 
                     if(bTimeRef) {
-                        uint64_t attitudeunixreftime = get_unixtimereference(current_messages.highres_imu.time_boot_ms); //Timestamp
+                        uint64_t attitudeunixreftime = get_unixtimereference(current_messages.attitude.time_boot_ms); //Timestamp
                         timestampAttitude_ns = boost::lexical_cast<uint64_t>(
                                 std::chrono::duration_cast<std::chrono::nanoseconds>(
                                         std::chrono::system_clock::now().time_since_epoch()).count());
