@@ -319,7 +319,8 @@ public:
     pthread_cond_t timeRef, noTimeRef, unEmptyIMU, emptyIMU,
 			unEmptyGPS, emptyGPS,
 			unEmptyLocalPos, emptyLocalPos,
-			unEmptyOdometry, emptyOdometry;
+			unEmptyOdometry, emptyOdometry,
+			unEmptyAttitude, emptyAttitude;
     pthread_mutex_t mutexTimeRef, mutexIMU, mutexGPS, mutexLocalPos, mutexOdometry, mutexAttitude;
 
     std::queue<mavlink_highres_imu_t> queueIMU;
