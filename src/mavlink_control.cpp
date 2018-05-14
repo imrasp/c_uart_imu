@@ -55,7 +55,8 @@
 
 #include "mavlink_control.h"
 
-Mavlink_Control::Mavlink_Control(ConfigParam *configParam_, IMU_Recorder *imu_recorder_): configParam(configParam_), imu_recorder(imu_recorder_){
+Mavlink_Control::Mavlink_Control(ConfigParam *configParam_, IMU_Recorder *imu_recorder_) : configParam(configParam_),
+                                                                                           imu_recorder(imu_recorder_) {
 
     // --------------------------------------------------------------------------
     //   PORT and THREAD STARTUP
@@ -136,26 +137,29 @@ void Mavlink_Control::start() {
                 std::chrono::duration_cast<std::chrono::microseconds>(
                         std::chrono::system_clock::now().time_since_epoch()).count());
 
-        if(configParam->gpstime)
-        {
-            cout << "waiting for time reference\n";
-            cout << "current_unix_time(" << current_unix_time <<
-                 ")  - sys_time.time_unix_usec(" << sys_time.time_unix_usec <<") = " <<
-                 abs(current_unix_time - sys_time.time_unix_usec) << "\n";
+        cout << "waiting for time reference\n";
+        cout << "current_unix_time(" << current_unix_time <<
+             ")  - sys_time.time_unix_usec(" << sys_time.time_unix_usec << ") = " <<
+             abs(current_unix_time - sys_time.time_unix_usec) << "\n";
 
-            if (current_unix_time - sys_time.time_unix_usec < 1e7) {
-                imu_recorder->set_ref_time(autopilot_interface->current_messages.system_time);
-                imu_recorder->start(autopilot_interface);
-                cout << "set time referenced = " << autopilot_interface->bTimeRef << "!! \n";
-                autopilot_interface->bTimeRef = true;
-            }
+        if (current_unix_time - sys_time.time_unix_usec < 1e7) {
+            imu_recorder->set_ref_time(autopilot_interface->current_messages.system_time);
+            imu_recorder->start(autopilot_interface);
+            cout << "set time referenced = " << autopilot_interface->bTimeRef << "!! \n";
+            autopilot_interface->bTimeRef = true;
+        } else if (configParam->gpstime) {
+            imu_recorder->set_ref_time(autopilot_interface->current_messages.system_time);
+            imu_recorder->start(autopilot_interface);
+            cout << "set time referenced without GPS!! \n";
+            autopilot_interface->bTimeRef = true;
         }
+
         pthread_cond_signal(&autopilot_interface->noTimeRef);
     }
 
 }
 
-void Mavlink_Control::cmd(){
+void Mavlink_Control::cmd() {
     // --------------------------------------------------------------------------
     //   START OFFBOARD MODE
     // --------------------------------------------------------------------------
