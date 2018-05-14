@@ -16,8 +16,11 @@ int main(int argc, char **argv) {
     bool bSLAM = false;
 
     try {
+        std::cout << "Configurating params \n";
         ConfigParam configParam(argc, argv);
+        std::cout << "Creating log folder \n";
         Log log(configParam.record_path);
+        std::cout << "Start IMU recorder thread \n";
         IMU_Recorder imu_recorder(&configParam, true);
         Mavlink_Control mavlinkControl(&configParam, &imu_recorder);
         Camera_Recorder cameraRecorder(&configParam);

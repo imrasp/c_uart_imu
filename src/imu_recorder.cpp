@@ -32,7 +32,7 @@ void IMU_Recorder::start(Autopilot_Interface *autopilot_interface_) {
 void IMU_Recorder::record(){
     // write out queue
     std::string sep = ",";
-    ofstream datasetimu, datasetimu2, datasetimu3, datasetimu4, datasetimu5, datasetgps, datasetgpsned, datasetOdometry;
+    ofstream datasetimu, datasetimu2, datasetimu3, datasetimu4, datasetimu5, datasetgps, datasetgpsned, datasetOdometry, datasetAttitude;
     double gpsx, gpsy, gpsz;
     geodetic_converter::GeodeticConverter *geodeticConverter = new geodetic_converter::GeodeticConverter();
 
@@ -46,6 +46,7 @@ void IMU_Recorder::record(){
         datasetgps.open("./record_data/gps0.csv");
         datasetgpsned.open("./record_data/gpsned.csv");
         datasetOdometry.open("./record_data/odometry.csv");
+        datasetAttitude.open("./record_data/attitude.csv");
     }
 
 
@@ -66,6 +67,8 @@ void IMU_Recorder::record(){
         datasetgpsned << "timestamp" << sep << "gpsx" << sep << "gpsy" << sep << "gpsz" << "\n";
         datasetOdometry << "timestamp" << sep << "tx" << sep << "ty" << sep << "tz" << sep
                         << "qx" << sep << "qy" << sep << "qz" << sep << "qw" << "\n";
+        datasetAttitude << "timestamp" << sep << "roll" << sep << "pitch" << sep << "yaw"
+                        << sep << "x" << sep << "y" << sep << "z" << sep << "w" << "\n";
     }
 
     pthread_mutex_lock(&autopilot_interface->mutexIMU);

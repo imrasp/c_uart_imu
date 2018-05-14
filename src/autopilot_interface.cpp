@@ -207,21 +207,31 @@ Autopilot_Interface(Serial_Port *serial_port_) {
     home_status = 0;
 
     bTimeRef = false;
+
     timeRef = PTHREAD_COND_INITIALIZER;
     noTimeRef = PTHREAD_COND_INITIALIZER;
     mutexTimeRef = PTHREAD_MUTEX_INITIALIZER;
+
     unEmptyIMU = PTHREAD_COND_INITIALIZER;
     emptyIMU = PTHREAD_COND_INITIALIZER;
     mutexIMU = PTHREAD_MUTEX_INITIALIZER;
+
     unEmptyGPS = PTHREAD_COND_INITIALIZER;
     emptyGPS = PTHREAD_COND_INITIALIZER;
     mutexGPS = PTHREAD_MUTEX_INITIALIZER;
+
     unEmptyLocalPos = PTHREAD_COND_INITIALIZER;
     emptyLocalPos = PTHREAD_COND_INITIALIZER;
     mutexLocalPos = PTHREAD_MUTEX_INITIALIZER;
+
     unEmptyOdometry= PTHREAD_COND_INITIALIZER;
     emptyOdometry = PTHREAD_COND_INITIALIZER;
     mutexOdometry = PTHREAD_MUTEX_INITIALIZER;
+
+    unEmptyAttitude= PTHREAD_COND_INITIALIZER;
+    emptyAttitude = PTHREAD_COND_INITIALIZER;
+    mutexAttitude = PTHREAD_MUTEX_INITIALIZER;
+    
     b_unixtimereference = false;
 
 }
@@ -309,7 +319,7 @@ read_messages() {
                     current_messages.time_stamps.local_position_ned = get_time_usec();
                     this_timestamps.local_position_ned = current_messages.time_stamps.local_position_ned;
 
-                    uint64_t odometryunixreftime = get_unixtimereference(current_messages.local_position_ned.time_boot_ms) * 1000; //milliseconds since system boot
+                    uint64_t localPosunixreftime = get_unixtimereference(current_messages.local_position_ned.time_boot_ms) * 1000; //milliseconds since system boot
                     timestampLocalPos_ns = boost::lexical_cast<uint64_t>(
                             std::chrono::duration_cast<std::chrono::nanoseconds>(
                                     std::chrono::system_clock::now().time_since_epoch()).count());
@@ -318,7 +328,7 @@ read_messages() {
                         pthread_mutex_lock(&mutexLocalPos);
                         queueLocalPos.push(current_messages.local_position_ned);
                         queueLocalPostime.push(timestampLocalPos_ns);
-                        queueLocalPosUnixRefTime.push(odometryunixreftime);
+                        queueLocalPosUnixRefTime.push(localPosunixreftime);
                         pthread_cond_signal(&unEmptyLocalPos);
                         pthread_mutex_unlock(&mutexLocalPos);
                     }
@@ -397,6 +407,20 @@ read_messages() {
                     mavlink_msg_attitude_decode(&message, &(current_messages.attitude));
                     current_messages.time_stamps.attitude = get_time_usec();
                     this_timestamps.attitude = current_messages.time_stamps.attitude;
+
+                    if(bTimeRef) {
+                        uint64_t attitudeunixreftime = get_unixtimereference(current_messages.highres_imu.time_boot_ms); //Timestamp
+                        timestampAttitude_ns = boost::lexical_cast<uint64_t>(
+                                std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                        std::chrono::system_clock::now().time_since_epoch()).count());
+
+                        pthread_mutex_lock(&mutexAttitude);
+                        queueAttitude.push(current_messages.attitude);
+                        queueAttitudetime.push(timestampAttitude_ns);
+                        queueAttitudeUnixRefTime.push(attitudeunixreftime);
+                        pthread_cond_signal(&unEmptyAttitude);
+                        pthread_mutex_unlock(&mutexAttitude);
+                    }
                     break;
                 }
 

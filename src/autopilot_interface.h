@@ -320,19 +320,21 @@ public:
 			unEmptyGPS, emptyGPS,
 			unEmptyLocalPos, emptyLocalPos,
 			unEmptyOdometry, emptyOdometry;
-    pthread_mutex_t mutexTimeRef, mutexIMU, mutexGPS, mutexLocalPos, mutexOdometry;
+    pthread_mutex_t mutexTimeRef, mutexIMU, mutexGPS, mutexLocalPos, mutexOdometry, mutexAttitude;
 
     std::queue<mavlink_highres_imu_t> queueIMU;
 	std::queue<mavlink_global_position_int_t> queueGPS;
 	std::queue<mavlink_local_position_ned_t> queueLocalPos;
 	std::queue<mavlink_odometry_t> queueOdometry;
+    std::queue<mavlink_attitude_t> queueAttitude;
 
 	std::queue<uint64_t> queueIMUtime, queueIMUUnixRefTime,
 			queueGPStime, queueGPSUnixRefTime,
 			queueLocalPostime, queueLocalPosUnixRefTime,
-			queueOdometrytime, queueOdometryUnixRefTime;
+			queueOdometrytime, queueOdometryUnixRefTime,
+            queueAttitudetime, queueAttitudeUnixRefTime;
 
-	uint64_t timestampcamera_ns, timestampgps_ns, timestampLocalPos_ns, timestampOdometry_ns;
+	uint64_t timestampcamera_ns, timestampgps_ns, timestampLocalPos_ns, timestampOdometry_ns, timestampAttitude_ns;
 
     void set_unixtimereference(mavlink_system_time_t time);
 	uint64_t get_unixtimereference(uint32_t time);
