@@ -36,6 +36,7 @@ void IMU_Recorder::record(){
     double gpsx, gpsy, gpsz;
     geodetic_converter::GeodeticConverter *geodeticConverter = new geodetic_converter::GeodeticConverter();
 
+    std::cout << "creating files for recording messages\n";
     datasetimu2.open("./record_data/imu0_odroidunix.csv");
     datasetimu3.open("./record_data/imu0_pixhawkms.csv");
 
