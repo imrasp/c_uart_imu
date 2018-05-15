@@ -337,7 +337,7 @@ read_messages() {
                 }
 
                 case MAVLINK_MSG_ID_GLOBAL_POSITION_INT: {
-                    printf("MAVLINK_MSG_ID_GLOBAL_POSITION_INT\n");
+//                    printf("MAVLINK_MSG_ID_GLOBAL_POSITION_INT\n");
                     mavlink_msg_global_position_int_decode(&message, &(current_messages.global_position_int));
                     current_messages.time_stamps.global_position_int = get_time_usec();
                     this_timestamps.global_position_int = current_messages.time_stamps.global_position_int;
