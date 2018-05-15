@@ -130,7 +130,6 @@ void Mavlink_Control::start() {
     while (!autopilot_interface->bTimeRef) {
         if (configParam->gpstime) {
             autopilot_interface->bTimeRef = true;
-            break;
         }
 
         pthread_mutex_lock(&autopilot_interface->mutexTimeRef);
