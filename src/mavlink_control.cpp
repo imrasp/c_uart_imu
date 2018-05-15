@@ -128,6 +128,10 @@ void Mavlink_Control::start() {
     // set time reference for imu data
 
     while (!autopilot_interface->bTimeRef) {
+        if (configParam->gpstime) {
+            break;
+        }
+
         pthread_mutex_lock(&autopilot_interface->mutexTimeRef);
         pthread_cond_wait(&autopilot_interface->timeRef, &autopilot_interface->mutexTimeRef);
         pthread_mutex_unlock(&autopilot_interface->mutexTimeRef);
@@ -147,13 +151,7 @@ void Mavlink_Control::start() {
             imu_recorder->start(autopilot_interface);
             cout << "set time referenced = " << autopilot_interface->bTimeRef << "!! \n";
             autopilot_interface->bTimeRef = true;
-        } else if (configParam->gpstime) {
-            imu_recorder->set_ref_time(autopilot_interface->current_messages.system_time);
-            imu_recorder->start(autopilot_interface);
-            cout << "set time referenced without GPS!! \n";
-            autopilot_interface->bTimeRef = true;
         }
-
         pthread_cond_signal(&autopilot_interface->noTimeRef);
     }
 
