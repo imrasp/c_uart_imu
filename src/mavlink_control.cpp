@@ -165,14 +165,14 @@ void Mavlink_Control::cmd() {
     // --------------------------------------------------------------------------
     autopilot_interface->enable_offboard_control();
 
-//    autopilot_interface->arm_control();
+    autopilot_interface->arm_control();
 
     usleep(100); // give some time to let it sink in
     cout << " waiting for " << configParam->sec << " sec.\n";
     // stack imu in queue for 60 seconds
     sleep(configParam->sec);
 
-//    autopilot_interface->disarm_control();
+    autopilot_interface->disarm_control();
 
 // --------------------------------------------------------------------------
 //   STOP OFFBOARD MODE
