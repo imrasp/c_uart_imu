@@ -1161,6 +1161,7 @@ void Autopilot_Interface::updateVisionEstimationPosition(mavlink_vision_position
 
 void Autopilot_Interface::set_unixtimereference(mavlink_system_time_t time){
 
+    cout << "set unix time reference \n";
     // set dynamic offset an ignore time drift in system_time message
     uint64_t ns = boost::lexical_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::system_clock::now().time_since_epoch()).count());
