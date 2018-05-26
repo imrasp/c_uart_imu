@@ -390,7 +390,7 @@ read_messages() {
                     if(bTimeRef) {
                         //uint64_t unixreftime = get_unixtimereference(current_messages.highres_imu.time_usec);
                         uint64_t unixreftime = odroid_unix_ns_ref + ((current_messages.highres_imu.time_usec - time_boot_ms_ref) * 1e3);
-                        cout << "unixreftime is " << unixreftime <<endl;
+                        //cout << "unixreftime is " << unixreftime <<endl;
                         timestampcamera_ns = boost::lexical_cast<uint64_t>(
                                 std::chrono::duration_cast<std::chrono::nanoseconds>(
                                         std::chrono::system_clock::now().time_since_epoch()).count());
@@ -469,6 +469,8 @@ read_messages() {
                                         std::chrono::system_clock::now().time_since_epoch()).count());
                         odroid_unix_ns_ref = ns;
                         time_boot_ms_ref = current_messages.system_time.time_boot_ms * 1000;
+
+                        cout << "odroid_unix_ns_ref & time_boot_ms_ref are " << ns << " and " << time_boot_ms_ref << endl;
                         //set_unixtimereference(current_messages.system_time);
                         bDynamicTimeRef = false;
 
