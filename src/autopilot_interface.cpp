@@ -389,7 +389,7 @@ read_messages() {
                     // check camera timestamp
                     if(bTimeRef) {
                         //uint64_t unixreftime = get_unixtimereference(current_messages.highres_imu.time_usec);
-                        uint64_t imuunixreftime = odroid_unix_ns_ref + ((current_messages.highres_imu.time_usec - time_boot_ms_ref) * 1e3);
+                        uint64_t imuunixreftime = odroid_unix_ns_ref + ((current_messages.highres_imu.time_usec - time_boot_ms_ref) * 1000);
                         cout << "!! odroid_unix_ns_ref & time_boot_ms_ref are " << odroid_unix_ns_ref << " and " << time_boot_ms_ref
                              << " ms is " << current_messages.highres_imu.time_usec << " and result is " << imuunixreftime << endl;
 
