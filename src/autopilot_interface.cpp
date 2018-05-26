@@ -1162,11 +1162,13 @@ void Autopilot_Interface::updateVisionEstimationPosition(mavlink_vision_position
 
 void Autopilot_Interface::set_unixtimereference(mavlink_system_time_t time){
 
-    cout << "set unix time reference \n";
+
     // set dynamic offset an ignore time drift in system_time message
     uint64_t ns = boost::lexical_cast<uint64_t>(
             std::chrono::duration_cast<std::chrono::nanoseconds>(
                     std::chrono::system_clock::now().time_since_epoch()).count());
+    odroid_unix_ns_ref = ns;
+    time_boot_ms_ref = time.time_boot_ms * 1000; //milliseconds to microsec.
     if (ns - time.time_unix_usec * 1000 < 1e12) { // 1 s = 1e9 ns
         odroid_unix_ns_ref = ns;
         time_boot_ms_ref = time.time_boot_ms * 1000; //milliseconds to microsec.
@@ -1174,15 +1176,16 @@ void Autopilot_Interface::set_unixtimereference(mavlink_system_time_t time){
         offset_time_ref = odroid_unix_ns_ref - gps_unix_ns_ref; // offset of gps time which is slower than odroid
         b_unixtimereference = true;
     }
+    cout << "set unix time reference with ns = " << ns <<"\n";
 }
 
 uint64_t Autopilot_Interface::get_unixtimereference(uint32_t time){
     if(b_unixtimereference){
         uint64_t a = odroid_unix_ns_ref + ((time - time_boot_ms_ref) * 1e3);
-        cout << a <<endl;
+        cout << "a is " << a <<endl;
         return (a);
     }
     else
-        return 1;
+        return (odroid_unix_ns_ref + ((time - time_boot_ms_ref) * 1e3));
 }
 
