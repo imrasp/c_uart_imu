@@ -1177,4 +1177,3 @@ uint64_t Autopilot_Interface::get_unixtimereference(uint32_t time){
         return 1;
 }
 
-
