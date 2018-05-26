@@ -1177,7 +1177,7 @@ void Autopilot_Interface::set_unixtimereference(mavlink_system_time_t time){
 
 uint64_t Autopilot_Interface::get_unixtimereference(uint32_t time){
     if(b_unixtimereference){
-        return (odroid_unix_ns_ref + ((time - time_boot_ms_ref) * 1e6));
+        return (odroid_unix_ns_ref + ((time - time_boot_ms_ref) * 1e3));
     }
     else
         return 1;

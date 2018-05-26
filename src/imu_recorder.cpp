@@ -101,6 +101,15 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                    << autopilot_interface->queueIMU.front().xacc << sep
                    << autopilot_interface->queueIMU.front().yacc << sep
                    << autopilot_interface->queueIMU.front().zacc << endl;
+
+        datasetimu5 << autopilot_interface->queueIMUUnixRefTime.front() << sep
+                    << autopilot_interface->queueIMU.front().xgyro << sep
+                    << autopilot_interface->queueIMU.front().ygyro << sep
+                    << autopilot_interface->queueIMU.front().zgyro << sep
+                    << autopilot_interface->queueIMU.front().xacc << sep
+                    << autopilot_interface->queueIMU.front().yacc << sep
+                    << autopilot_interface->queueIMU.front().zacc << endl;
+        
         if (configParam->gpstime) {
             datasetimu << timestamp_ns << sep
                        << autopilot_interface->queueIMU.front().xgyro << sep
@@ -118,13 +127,7 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
 //                    << autopilot_interface->queueIMU.front().yacc << sep
 //                    << autopilot_interface->queueIMU.front().zacc << endl;
 
-            datasetimu5 << autopilot_interface->queueIMUUnixRefTime.front() << sep
-                        << autopilot_interface->queueIMU.front().xgyro << sep
-                        << autopilot_interface->queueIMU.front().ygyro << sep
-                        << autopilot_interface->queueIMU.front().zgyro << sep
-                        << autopilot_interface->queueIMU.front().xacc << sep
-                        << autopilot_interface->queueIMU.front().yacc << sep
-                        << autopilot_interface->queueIMU.front().zacc << endl;
+
 //
             // record gps as a ground truth
             if(autopilot_interface->queueGPS.empty()) {
