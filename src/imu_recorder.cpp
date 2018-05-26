@@ -39,11 +39,11 @@ void IMU_Recorder::record(){
     std::cout << "creating files for recording messages\n";
     datasetimu2.open("./record_data/imu0_odroidunix.csv");
     datasetimu3.open("./record_data/imu0_pixhawkms.csv");
-
+    datasetimu5.open("./record_data/imu0_odroidrefpixhawk.csv");
     if (configParam->gpstime) {
         datasetimu.open("./record_data/imu0.csv");
         //datasetimu4.open("./record_data/imu0_odroidpixhawk.csv");
-        datasetimu5.open("./record_data/imu0_odroidrefpixhawk.csv");
+
         datasetgps.open("./record_data/gps0.csv");
         datasetgpsned.open("./record_data/gpsned.csv");
         datasetOdometry.open("./record_data/odometry.csv");
@@ -55,15 +55,15 @@ void IMU_Recorder::record(){
                << "alpha_y" << sep << "alpha_z" << "\n";
     datasetimu3 << "timestamp" << sep << "omega_x" << sep << "omega_y" << sep << "omega_z" << sep << "alpha_x" << sep
                 << "alpha_y" << sep << "alpha_z" << "\n";
-
+    datasetimu5 << "timestamp" << sep << "omega_x" << sep << "omega_y" << sep << "omega_z" << sep << "alpha_x"
+                << sep
+                << "alpha_y" << sep << "alpha_z" << "\n";
     if (configParam->gpstime) {
         datasetimu << "timestamp" << sep << "omega_x" << sep << "omega_y" << sep << "omega_z" << sep << "alpha_x" << sep
                    << "alpha_y" << sep << "alpha_z" << "\n";
 //    datasetimu4 << "timestamp" << sep << "omega_x" << sep << "omega_y" << sep << "omega_z" << sep << "alpha_x" << sep
 //                << "alpha_y" << sep << "alpha_z" << "\n";
-        datasetimu5 << "timestamp" << sep << "omega_x" << sep << "omega_y" << sep << "omega_z" << sep << "alpha_x"
-                    << sep
-                    << "alpha_y" << sep << "alpha_z" << "\n";
+
         datasetgps << "timestamp" << sep << "lat" << sep << "lon" << sep << "alt" << "\n";
         datasetgpsned << "timestamp" << sep << "gpsx" << sep << "gpsy" << sep << "gpsz" << "\n";
         datasetOdometry << "timestamp" << sep << "tx" << sep << "ty" << sep << "tz" << sep
@@ -109,7 +109,7 @@ pthread_mutex_unlock(&autopilot_interface->mutexIMU);
                     << autopilot_interface->queueIMU.front().xacc << sep
                     << autopilot_interface->queueIMU.front().yacc << sep
                     << autopilot_interface->queueIMU.front().zacc << endl;
-        
+
         if (configParam->gpstime) {
             datasetimu << timestamp_ns << sep
                        << autopilot_interface->queueIMU.front().xgyro << sep
