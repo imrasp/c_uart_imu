@@ -389,7 +389,7 @@ read_messages() {
                     // check camera timestamp
                     if(bTimeRef) {
                         //uint64_t unixreftime = get_unixtimereference(current_messages.highres_imu.time_usec);
-                        uint64_t unixreftime = odroid_unix_ns_ref + ((current_messages.highres_imu.time_usec - time_boot_ms_ref) * 1e3)
+                        uint64_t unixreftime = odroid_unix_ns_ref + ((current_messages.highres_imu.time_usec - time_boot_ms_ref) * 1e3);
                         cout << "unixreftime is " << unixreftime <<endl;
                         timestampcamera_ns = boost::lexical_cast<uint64_t>(
                                 std::chrono::duration_cast<std::chrono::nanoseconds>(
