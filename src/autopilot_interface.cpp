@@ -1164,10 +1164,10 @@ void Autopilot_Interface::set_unixtimereference(mavlink_system_time_t time){
 
     cout << "set unix time reference \n";
     // set dynamic offset an ignore time drift in system_time message
-
+    uint64_t ns boost::lexical_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::system_clock::now().time_since_epoch()).count());
     if (ns - time.time_unix_usec * 1000 < 1e12) { // 1 s = 1e9 ns
-        odroid_unix_ns_ref = boost::lexical_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
-                std::chrono::system_clock::now().time_since_epoch()).count());;
+        odroid_unix_ns_ref = ns;
         time_boot_ms_ref = time.time_boot_ms * 1000; //milliseconds to microsec.
         gps_unix_ns_ref = time.time_unix_usec * 1000; //microseconds * 1000
         offset_time_ref = odroid_unix_ns_ref - gps_unix_ns_ref; // offset of gps time which is slower than odroid
