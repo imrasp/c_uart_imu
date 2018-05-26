@@ -1168,7 +1168,7 @@ void Autopilot_Interface::set_unixtimereference(mavlink_system_time_t time){
 
     if (ns - time.time_unix_usec * 1000 < 1e12) { // 1 s = 1e9 ns
         odroid_unix_ns_ref = ns;
-        time_boot_ms_ref = time.time_boot_ms; //milliseconds
+        time_boot_ms_ref = time.time_boot_ms * 1000; //milliseconds to microsec.
         gps_unix_ns_ref = time.time_unix_usec * 1000; //microseconds * 1000
         offset_time_ref = odroid_unix_ns_ref - gps_unix_ns_ref; // offset of gps time which is slower than odroid
         b_unixtimereference = true;
@@ -1177,7 +1177,7 @@ void Autopilot_Interface::set_unixtimereference(mavlink_system_time_t time){
 
 uint64_t Autopilot_Interface::get_unixtimereference(uint32_t time){
     if(b_unixtimereference){
-        return (odroid_unix_ns_ref + ((time - time_boot_ms_ref) * 1e3));
+        return (odroid_unix_ns_ref + ((time - time_boot_ms_ref) * 1e6));
     }
     else
         return 1;
