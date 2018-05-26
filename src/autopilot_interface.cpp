@@ -389,8 +389,9 @@ read_messages() {
                     // check camera timestamp
                     if(bTimeRef) {
                         //uint64_t unixreftime = get_unixtimereference(current_messages.highres_imu.time_usec);
-                        uint64_t unixreftime = odroid_unix_ns_ref + ((current_messages.highres_imu.time_usec - time_boot_ms_ref) * 1e3);
-                        cout << "!! odroid_unix_ns_ref & time_boot_ms_ref are " << odroid_unix_ns_ref << " and " << time_boot_ms_ref << endl;
+                        uint64_t imuunixreftime = odroid_unix_ns_ref + ((current_messages.highres_imu.time_usec - time_boot_ms_ref) * 1e3);
+                        cout << "!! odroid_unix_ns_ref & time_boot_ms_ref are " << odroid_unix_ns_ref << " and " << time_boot_ms_ref
+                             << " ms is " << current_messages.highres_imu.time_usec << " and result is " << imuunixreftime << endl;
 
                         timestampcamera_ns = boost::lexical_cast<uint64_t>(
                                 std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -399,7 +400,7 @@ read_messages() {
                         pthread_mutex_lock(&mutexIMU);
                         queueIMU.push(current_messages.highres_imu);
                         queueIMUtime.push(timestampcamera_ns);
-                        queueIMUUnixRefTime.push(unixreftime);
+                        queueIMUUnixRefTime.push(imuunixreftime);
                         pthread_cond_signal(&unEmptyIMU);
                         pthread_mutex_unlock(&mutexIMU);
                     }
