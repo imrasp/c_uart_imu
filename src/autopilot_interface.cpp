@@ -233,6 +233,7 @@ Autopilot_Interface(Serial_Port *serial_port_) {
     mutexAttitude = PTHREAD_MUTEX_INITIALIZER;
     
     b_unixtimereference = false;
+    bDynamicTimeRef = true;
 
 }
 
@@ -460,7 +461,11 @@ read_messages() {
                     current_messages.time_stamps.system_time = get_time_usec();
                     this_timestamps.system_time = current_messages.time_stamps.system_time;
 
-                    set_unixtimereference(current_messages.system_time);
+                    if (bDynamicTimeRef) {
+                        set_unixtimereference(current_messages.system_time);
+                        bDynamicTimeRef = false;
+
+                    }
 //cout<< "receive system_time message\n";
                     if (!bTimeRef) {
 //cout<< "signal time ref \n "; 

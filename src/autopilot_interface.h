@@ -341,7 +341,7 @@ public:
 	uint64_t get_unixtimereference(uint32_t time);
 	uint64_t gps_unix_ns_ref, odroid_unix_ns_ref, offset_time_ref;
     uint32_t time_boot_ms_ref;
-    bool b_unixtimereference;
+    bool b_unixtimereference, bDynamicTimeRef;
 
 private:
 
