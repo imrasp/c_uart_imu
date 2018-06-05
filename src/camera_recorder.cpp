@@ -3,7 +3,7 @@
 //
 #include "camera_recorder.h"
 
-Camera_Recorder::Camera_Recorder(ConfigParam *configParam_):configParam(configParam_){
+Camera_Recorder::Camera_Recorder(ConfigParam *configParam_, bool bViewer_):configParam(configParam_), bViewer(bViewer_){
 
 }
 
@@ -77,9 +77,11 @@ void Camera_Recorder::cameraLoop() {
         pthread_cond_signal(&frameQueueCondNotempty);
         pthread_mutex_unlock(&_mutexFrameCam1Last);
 
-//        std::cout << "read matFrameForward size : " << matFrameForward.size() << std::endl;
-//        cv::imshow("Camera", matFrameForward);
-//        if (cv::waitKey(1) >= 0) break;
+        if (bViewer) {
+            std::cout << "read matFrameForward size : " << matFrameForward.size() << std::endl;
+            cv::imshow("Camera", matFrameForward);
+            if (cv::waitKey(1) >= 0) break;
+        }
 
         totalFrame++;
     }

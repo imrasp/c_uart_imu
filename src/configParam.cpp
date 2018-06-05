@@ -31,7 +31,7 @@ void ConfigParam::readParams(){
     fSettings["system.uart_name"] >> uart_name;
     fSettings["system.record_path"] >> record_path;
     sec = fSettings["system.sec"];
-    cameraid = fSettings["system.camera1"];
+    cameraid = fSettings["system.cameraid"];
     fps = fSettings["system.fps"];
     gpstime = fSettings["system.gpstime"];
 

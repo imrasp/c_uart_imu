@@ -24,7 +24,7 @@
 
 class Camera_Recorder {
 public:
-    Camera_Recorder(ConfigParam *configParam_);
+    Camera_Recorder(ConfigParam *configParam_, bool bViewer_);
     ~Camera_Recorder();
 
     void initializeCamera();
@@ -44,6 +44,7 @@ public:
     int max_width, max_height;
     std::queue<uint64_t> qTime;
     std::queue<cv::Mat> qFrame;
+    bool bViewer;
 
 private:
     ConfigParam *configParam;

@@ -4,6 +4,6 @@ system.baudrate: 921600
 system.uart_name: /dev/ttyUSB0
 system.record_path: record_data
 system.fps: 20
-system.sec: 60
-system.cameraid: 0 # /dev/video0
+system.sec: 180
+system.cameraid: 1 # /dev/video0
 system.gpstime: 0 #use gps time 1:yes 0:no
