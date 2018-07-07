@@ -35,7 +35,7 @@ set(SOURCE_FILES
         src/imu_recorder.h
         src/time_recorder.cpp
         src/time_recorder.h
-        src/location_manager.cpp)
+        src/geodetic_converter.cpp)
 
 include_directories(
         ${CMAKE_SOURCE_DIR}/mavlink/include/mavlink/v2.0

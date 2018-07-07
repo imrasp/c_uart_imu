@@ -1,213 +1,136 @@
 //
-// Created by rasp on 29/4/2561.
+// Created by rasp on 25/6/2561.
 //
 
-#include "math.h"
-#include <eigen3/Eigen/Dense>
+#include "location_manager.h"
 
-namespace geodetic_converter {
-// Geodetic system parameters
-    static double kSemimajorAxis = 6378137;
-    static double kSemiminorAxis = 6356752.3142;
-    static double kFirstEccentricitySquared = 6.69437999014 * 0.001;
-    static double kSecondEccentricitySquared = 6.73949674228 * 0.001;
-    static double kFlattening = 1 / 298.257223563;
+Location_Manager::Location_Manager(): initializeGeodetic(false) {
+    geodeticConverter = new geodetic_converter::GeodeticConverter();
+    cx = 0;
+    cy = 0;
+    cz = 0;
+    c_local_timestamp = 0;
+    c_lat = 0;
+    c_lon = 0;
+    c_alt = 0;
+    c_global_timestamp = 0;
 
-    class GeodeticConverter {
-    public:
-        Eigen::Matrix3d ecef_to_ned_matrix_;
-        Eigen::Matrix3d ned_to_ecef_matrix_;
+    mutex_localpose = PTHREAD_MUTEX_INITIALIZER;
+    mutex_globalpose = PTHREAD_MUTEX_INITIALIZER;
 
-        GeodeticConverter() {
-            haveReference_ = false;
+   time_to_exit = false;
+    boost::thread threadInitialGeodetic = boost::thread(&Location_Manager::set_initial_geodetic_pose, this);
+}
+
+Location_Manager::~Location_Manager() {
+
+}
+
+void Location_Manager::set_initial_geodetic_pose() {
+    std::cout << "Start set_initial_geodetic_pose thread..." << std::endl;
+    while(!time_to_exit) {
+        std::cout << "local time = " << c_local_timestamp << " global time = " << c_global_timestamp << std::endl;
+        if (c_local_timestamp < c_global_timestamp && c_local_timestamp > 0) {
+
+            pthread_mutex_lock(&mutex_localpose);
+            pthread_mutex_lock(&mutex_globalpose);
+
+            geodeticConverter->initialiseReference(c_lat / 10e7, c_lon / 10e7, c_alt / 10e7);
+
+            // get initial position use for interpolation
+            uint64_t i_time = c_local_timestamp;
+            double i_x = cx;
+            double i_y = cy;
+            double i_z = cz;
+            std::cout << "1st NED position is " << i_x << ", " << i_y << ", " << i_z << std::endl;
+            pthread_mutex_unlock(&mutex_localpose);
+            // get second position for interpolation
+            uint64_t f_time;
+            double f_x, f_y, f_z;
+            while (c_local_timestamp != i_time) {
+                pthread_mutex_lock(&mutex_localpose);
+                f_time = c_local_timestamp;
+                f_x = cx;
+                f_y = cy;
+                f_z = cz;
+                pthread_mutex_unlock(&mutex_localpose);
+            }
+            std::cout << "2st NED position is " << f_x << ", " << f_y << ", " << f_z << std::endl;
+
+            // perform interpolation
+            init_nedx = interpolate(i_time, f_time, c_global_timestamp, i_x, f_x);
+            init_nedy = interpolate(i_time, f_time, c_global_timestamp, i_y, f_y);
+            init_nedz = interpolate(i_time, f_time, c_global_timestamp, i_z, f_z);
+
+            initializeGeodetic = true;
+
+            std::cout << "\n\n initialize geodetic position complete with \n"
+                      << "timestamp : " << c_global_timestamp << std::endl
+                      << "GPS position : " << c_lat << ", " << c_lon << ", " << c_alt << std::endl
+                      << "NED position : " << init_nedx << ", " << init_nedy << ", " << init_nedz
+                      << "\n ------------------------------------------------ \n\n";
+
+            pthread_mutex_unlock(&mutex_globalpose);
+            break;
         }
+    }
+}
 
-        ~GeodeticConverter() {
-        }
+void Location_Manager::set_local_position(uint32_t timestamp, double x, double y, double z){
+    std::cout << "set local pose \n";
+    pthread_mutex_lock(&mutex_localpose);
+    c_local_timestamp = timestamp;
+    cx = x;
+    cy = y;
+    cz = z;
+    pthread_mutex_unlock(&mutex_localpose);
+}
 
-        // Default copy constructor and assignment operator are OK.
+void Location_Manager::set_global_position(uint32_t timestamp, double lat, double lon, double alt){
+    std::cout << "set global pose \n";
+    pthread_mutex_lock(&mutex_globalpose);
+    c_global_timestamp = timestamp;
+    c_lat = lat;
+    c_lon = lon;
+    c_alt = alt;
+    pthread_mutex_unlock(&mutex_globalpose);
+}
 
-        bool isInitialised() {
-            return haveReference_;
-        }
+void Location_Manager::stream_global_position(uint32_t timestamp, double lat, double lon, double alt){
+//    nlohmann::json drone_position = {{"misison_id", 1}, {"time", timestamp}, {"lat", lat},{"lon", lon}, {"alt", alt}};
+//    auto r = cpr::Post(cpr::Url{"192.168.1.132:3000/current_pos"},
+//                       cpr::Body{drone_position.dump()}
+//    );
+}
 
-        void getReference(double *latitude, double *longitude, double *altitude) {
-            *latitude = initial_latitude_;
-            *longitude = initial_longitude_;
-            *altitude = initial_altitude_;
-        }
+double Location_Manager::interpolate(uint32_t x1, uint32_t x2, uint32_t x_predict, double y1, double y2){
+    // predicted_y =
+    return y2 + (x_predict -x2) * ((y2 - y1)/(x2 - x1));
+}
 
-        void initialiseReference(const double latitude, const double longitude, const double altitude) {
-            // Save NED origin
-            initial_latitude_ = deg2Rad(latitude);
-            initial_longitude_ = deg2Rad(longitude);
-            initial_altitude_ = altitude;
+bool Location_Manager::isGeodeticInitialize(){
+    return initializeGeodetic;
+}
 
-            // Compute ECEF of NED origin
-            geodetic2Ecef(latitude, longitude, altitude, &initial_ecef_x_, &initial_ecef_y_, &initial_ecef_z_);
+void Location_Manager::get_NED_from_geodetic(double lat, double lon, double alt, float *x, float *y, float *z) {
+    double xx,yy,zz;
+    geodeticConverter->geodetic2Ned(lat, lon, alt, &xx, &yy, &zz);
+    *x = xx + init_nedx;
+    *y = yy + init_nedy;
+    *z = zz + init_nedz;
+}
 
-            // Compute ECEF to NED and NED to ECEF matrices
-            double phiP = atan2(initial_ecef_z_, sqrt(pow(initial_ecef_x_, 2) + pow(initial_ecef_y_, 2)));
+double Location_Manager::distanceInKmBetweenEarthCoordinates(double lat1, double lon1, double lat2, double lon2) {
+    double earthRadiusKm = 6371;
 
-            ecef_to_ned_matrix_ = nRe(phiP, initial_longitude_);
-            ned_to_ecef_matrix_ = nRe(initial_latitude_, initial_longitude_).transpose();
+    double dLat = geodeticConverter->deg2Rad(lat2-lat1);
+    double dLon = geodeticConverter->deg2Rad(lon2-lon1);
 
-            haveReference_ = true;
-        }
+    lat1 = geodeticConverter->deg2Rad(lat1);
+    lat2 = geodeticConverter->deg2Rad(lat2);
 
-        void geodetic2Ecef(const double latitude, const double longitude, const double altitude, double *x,
-                           double *y, double *z) {
-            // Convert geodetic coordinates to ECEF.
-            // http://code.google.com/p/pysatel/source/browse/trunk/coord.py?r=22
-            double lat_rad = deg2Rad(latitude);
-            double lon_rad = deg2Rad(longitude);
-            double xi = sqrt(1 - kFirstEccentricitySquared * sin(lat_rad) * sin(lat_rad));
-            *x = (kSemimajorAxis / xi + altitude) * cos(lat_rad) * cos(lon_rad);
-            *y = (kSemimajorAxis / xi + altitude) * cos(lat_rad) * sin(lon_rad);
-            *z = (kSemimajorAxis / xi * (1 - kFirstEccentricitySquared) + altitude) * sin(lat_rad);
-        }
-
-        void ecef2Geodetic(const double x, const double y, const double z, double *latitude,
-                           double *longitude, double *altitude) {
-            // Convert ECEF coordinates to geodetic coordinates.
-            // J. Zhu, "Conversion of Earth-centered Earth-fixed coordinates
-            // to geodetic coordinates," IEEE Transactions on Aerospace and
-            // Electronic Systems, vol. 30, pp. 957-961, 1994.
-
-            double r = sqrt(x * x + y * y);
-            double Esq = kSemimajorAxis * kSemimajorAxis - kSemiminorAxis * kSemiminorAxis;
-            double F = 54 * kSemiminorAxis * kSemiminorAxis * z * z;
-            double G = r * r + (1 - kFirstEccentricitySquared) * z * z - kFirstEccentricitySquared * Esq;
-            double C = (kFirstEccentricitySquared * kFirstEccentricitySquared * F * r * r) / pow(G, 3);
-            double S = cbrt(1 + C + sqrt(C * C + 2 * C));
-            double P = F / (3 * pow((S + 1 / S + 1), 2) * G * G);
-            double Q = sqrt(1 + 2 * kFirstEccentricitySquared * kFirstEccentricitySquared * P);
-            double r_0 = -(P * kFirstEccentricitySquared * r) / (1 + Q)
-                         + sqrt(
-                    0.5 * kSemimajorAxis * kSemimajorAxis * (1 + 1.0 / Q)
-                    - P * (1 - kFirstEccentricitySquared) * z * z / (Q * (1 + Q)) - 0.5 * P * r * r);
-            double U = sqrt(pow((r - kFirstEccentricitySquared * r_0), 2) + z * z);
-            double V = sqrt(
-                    pow((r - kFirstEccentricitySquared * r_0), 2) + (1 - kFirstEccentricitySquared) * z * z);
-            double Z_0 = kSemiminorAxis * kSemiminorAxis * z / (kSemimajorAxis * V);
-            *altitude = U * (1 - kSemiminorAxis * kSemiminorAxis / (kSemimajorAxis * V));
-            *latitude = rad2Deg(atan((z + kSecondEccentricitySquared * Z_0) / r));
-            *longitude = rad2Deg(atan2(y, x));
-        }
-
-        void ecef2Ned(const double x, const double y, const double z, double *north, double *east,
-                      double *down) {
-            // Converts ECEF coordinate position into local-tangent-plane NED.
-            // Coordinates relative to given ECEF coordinate frame.
-
-            Eigen::Vector3d vect, ret;
-            vect(0) = x - initial_ecef_x_;
-            vect(1) = y - initial_ecef_y_;
-            vect(2) = z - initial_ecef_z_;
-            ret = ecef_to_ned_matrix_ * vect;
-            *north = ret(0);
-            *east = ret(1);
-            *down = -ret(2);
-        }
-
-        void ned2Ecef(const double north, const double east, const double down, double *x, double *y,
-                      double *z) {
-            // NED (north/east/down) to ECEF coordinates
-            Eigen::Vector3d ned, ret;
-            ned(0) = north;
-            ned(1) = east;
-            ned(2) = -down;
-            ret = ned_to_ecef_matrix_ * ned;
-            *x = ret(0) + initial_ecef_x_;
-            *y = ret(1) + initial_ecef_y_;
-            *z = ret(2) + initial_ecef_z_;
-        }
-
-        void geodetic2Ned(const double latitude, const double longitude, const double altitude,
-                          double *north, double *east, double *down) {
-            // Geodetic position to local NED frame
-            double x, y, z;
-            geodetic2Ecef(latitude, longitude, altitude, &x, &y, &z);
-            ecef2Ned(x, y, z, north, east, down);
-        }
-
-        void ned2Geodetic(const double north, const double east, const double down, double *latitude,
-                          double *longitude, double *altitude) {
-            // Local NED position to geodetic coordinates
-            double x, y, z;
-            ned2Ecef(north, east, down, &x, &y, &z);
-            ecef2Geodetic(x, y, z, latitude, longitude, altitude);
-        }
-
-        void geodetic2Enu(const double latitude, const double longitude, const double altitude,
-                          double *east, double *north, double *up) {
-            // Geodetic position to local ENU frame
-            double x, y, z;
-            geodetic2Ecef(latitude, longitude, altitude, &x, &y, &z);
-
-            double aux_north, aux_east, aux_down;
-            ecef2Ned(x, y, z, &aux_north, &aux_east, &aux_down);
-
-            *east = aux_east;
-            *north = aux_north;
-            *up = -aux_down;
-        }
-
-        void enu2Geodetic(const double east, const double north, const double up, double *latitude,
-                          double *longitude, double *altitude) {
-            // Local ENU position to geodetic coordinates
-
-            const double aux_north = north;
-            const double aux_east = east;
-            const double aux_down = -up;
-            double x, y, z;
-            ned2Ecef(aux_north, aux_east, aux_down, &x, &y, &z);
-            ecef2Geodetic(x, y, z, latitude, longitude, altitude);
-        }
-
-    private:
-        inline Eigen::Matrix3d nRe(const double lat_radians, const double lon_radians) {
-            const double sLat = sin(lat_radians);
-            const double sLon = sin(lon_radians);
-            const double cLat = cos(lat_radians);
-            const double cLon = cos(lon_radians);
-
-            Eigen::Matrix3d ret;
-            ret(0, 0) = -sLat * cLon;
-            ret(0, 1) = -sLat * sLon;
-            ret(0, 2) = cLat;
-            ret(1, 0) = -sLon;
-            ret(1, 1) = cLon;
-            ret(1, 2) = 0.0;
-            ret(2, 0) = cLat * cLon;
-            ret(2, 1) = cLat * sLon;
-            ret(2, 2) = sLat;
-
-            return ret;
-        }
-
-        inline
-        double rad2Deg(const double radians) {
-            return (radians / M_PI) * 180.0;
-        }
-
-        inline
-        double deg2Rad(const double degrees) {
-            return (degrees / 180.0) * M_PI;
-        }
-
-        double initial_latitude_;
-        double initial_longitude_;
-        double initial_altitude_;
-
-        double initial_ecef_x_;
-        double initial_ecef_y_;
-        double initial_ecef_z_;
-
-//        Eigen::Matrix3d ecef_to_ned_matrix_;
-//        Eigen::Matrix3d ned_to_ecef_matrix_;
-
-        bool haveReference_;
-
-    }; // class GeodeticConverter
-}; // namespace geodetic_conv
+    double a = sin(dLat/2) * sin(dLat/2) +
+               sin(dLon/2) * sin(dLon/2) * cos(lat1) * cos(lat2);
+    double c = 2 * atan2(sqrt(a), sqrt(1-a));
+    return earthRadiusKm * c;
+}
