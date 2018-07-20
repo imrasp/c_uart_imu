@@ -65,6 +65,7 @@ void IMU_Recorder::write_imu_from_queue() {
 //    pthread_mutex_unlock(&mutexIMU);
 
     while (!time_to_exit) {// || !autopilot_interface->queueIMU.empty()) {
+        std::cout << "write an imu\n";
         pthread_mutex_lock(&mutexIMU);
         if (queueIMU.empty())
             pthread_cond_wait(&unEmptyIMU, &mutexIMU);
