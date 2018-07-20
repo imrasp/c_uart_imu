@@ -17,10 +17,13 @@ public:
     static string setting;
 
     static int cameraid;
-    static int  fps;
+    static int fps;
     static int baudrate;
     static int sec;
     static int gpstime;
+    static int slam_position_update;
+    static int gps_position_update;
+
     static string uart_name;
     static string mission_route;
     static string record_path;

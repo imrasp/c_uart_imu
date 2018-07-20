@@ -181,7 +181,7 @@ set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp) {
 //   Con/De structors
 // ------------------------------------------------------------------------------
 Autopilot_Interface::
-Autopilot_Interface(Serial_Port *serial_port_) {
+Autopilot_Interface(Serial_Port *serial_port_, Location_Manager *location_manager_): location_manager(location_manager_) {
     // initialize attributes
     write_count = 0;
 
@@ -320,20 +320,10 @@ read_messages() {
                     current_messages.time_stamps.local_position_ned = get_time_usec();
                     this_timestamps.local_position_ned = current_messages.time_stamps.local_position_ned;
 
-                    uint64_t localPosunixreftime = get_unixtimereference(current_messages.local_position_ned.time_boot_ms) * 1000; //milliseconds since system boot
-                    timestampLocalPos_ns = boost::lexical_cast<uint64_t>(
-                            std::chrono::duration_cast<std::chrono::nanoseconds>(
-                                    std::chrono::system_clock::now().time_since_epoch()).count());
-
-                    if(bTimeRef) {
-                        pthread_mutex_lock(&mutexLocalPos);
-                        queueLocalPos.push(current_messages.local_position_ned);
-                        queueLocalPostime.push(timestampLocalPos_ns);
-                        queueLocalPosUnixRefTime.push(localPosunixreftime);
-                        pthread_cond_signal(&unEmptyLocalPos);
-                        pthread_mutex_unlock(&mutexLocalPos);
-                    }
-
+                    location_manager->set_local_position(current_messages.local_position_ned.time_boot_ms,
+                                                         current_messages.local_position_ned.x,
+                                                         current_messages.local_position_ned.y,
+                                                         current_messages.local_position_ned.z);
                     break;
                 }
 
@@ -343,19 +333,10 @@ read_messages() {
                     current_messages.time_stamps.global_position_int = get_time_usec();
                     this_timestamps.global_position_int = current_messages.time_stamps.global_position_int;
 
-                    uint64_t gpsunixreftime = get_unixtimereference(current_messages.global_position_int.time_boot_ms) * 1000; //milliseconds since system boot
-                    timestampgps_ns = boost::lexical_cast<uint64_t>(
-                            std::chrono::duration_cast<std::chrono::nanoseconds>(
-                                    std::chrono::system_clock::now().time_since_epoch()).count());
-
-                    if(bTimeRef) {
-                        pthread_mutex_lock(&mutexGPS);
-                        queueGPS.push(current_messages.global_position_int);
-                        queueGPStime.push(timestampgps_ns);
-                        queueGPSUnixRefTime.push(gpsunixreftime);
-                        pthread_cond_signal(&unEmptyGPS);
-                        pthread_mutex_unlock(&mutexGPS);
-                    }
+                    location_manager->set_global_position(current_messages.global_position_int.time_boot_ms,
+                                                          current_messages.global_position_int.lat,
+                                                          current_messages.global_position_int.lon,
+                                                          current_messages.global_position_int.alt);
                     break;
                 }
 
@@ -374,6 +355,9 @@ read_messages() {
                                                                   &(current_messages.position_target_global_int));
                     current_messages.time_stamps.position_target_global_int = get_time_usec();
                     this_timestamps.position_target_global_int = current_messages.time_stamps.position_target_global_int;
+
+                    // Pass INT position to location manager
+
                     break;
                 }
 
@@ -383,27 +367,17 @@ read_messages() {
                     current_messages.time_stamps.highres_imu = get_time_usec();
                     this_timestamps.highres_imu = current_messages.time_stamps.highres_imu;
 
-                    // get first message and set reference time
-                    // then for each of messages (especially imu) use this ref to convert to unix time ( as same as mavlink)
-                    // collect imu time_since_boot ms also (use for further expriments)
-                    // check camera timestamp
-                    if(bTimeRef) {
-                        //uint64_t unixreftime = get_unixtimereference(current_messages.highres_imu.time_usec);
-                        uint64_t imuunixreftime = odroid_unix_ns_ref + ((current_messages.highres_imu.time_usec - time_boot_ms_ref) * 1000);
-                        //cout << "!! odroid_unix_ns_ref & time_boot_ms_ref are " << odroid_unix_ns_ref << " and " << time_boot_ms_ref
-                        //     << " ms is " << current_messages.highres_imu.time_usec << " and result is " << imuunixreftime << endl;
+                    break;
+                }
 
-                        timestampcamera_ns = boost::lexical_cast<uint64_t>(
-                                std::chrono::duration_cast<std::chrono::nanoseconds>(
-                                        std::chrono::system_clock::now().time_since_epoch()).count());
+                case MAVLINK_MSG_ID_SCALED_IMU: {
+                    //printf("MAVLINK_MSG_ID_HIGHRES_IMU\n");
+                    mavlink_msg_scaled_imu_decode(&message, &(current_messages.scaled_imu));
+                    current_messages.time_stamps.scaled_imu = get_time_usec();
+                    this_timestamps.scaled_imu = current_messages.time_stamps.scaled_imu;
 
-                        pthread_mutex_lock(&mutexIMU);
-                        queueIMU.push(current_messages.highres_imu);
-                        queueIMUtime.push(timestampcamera_ns);
-                        queueIMUUnixRefTime.push(imuunixreftime);
-                        pthread_cond_signal(&unEmptyIMU);
-                        pthread_mutex_unlock(&mutexIMU);
-                    }
+
+
                     break;
                 }
 
@@ -413,19 +387,6 @@ read_messages() {
                     current_messages.time_stamps.attitude = get_time_usec();
                     this_timestamps.attitude = current_messages.time_stamps.attitude;
 
-                    if(bTimeRef) {
-                        uint64_t attitudeunixreftime = get_unixtimereference(current_messages.attitude.time_boot_ms); //Timestamp
-                        timestampAttitude_ns = boost::lexical_cast<uint64_t>(
-                                std::chrono::duration_cast<std::chrono::nanoseconds>(
-                                        std::chrono::system_clock::now().time_since_epoch()).count());
-
-                        pthread_mutex_lock(&mutexAttitude);
-                        queueAttitude.push(current_messages.attitude);
-                        queueAttitudetime.push(timestampAttitude_ns);
-                        queueAttitudeUnixRefTime.push(attitudeunixreftime);
-                        pthread_cond_signal(&unEmptyAttitude);
-                        pthread_mutex_unlock(&mutexAttitude);
-                    }
                     break;
                 }
 
@@ -443,20 +404,6 @@ read_messages() {
                     current_messages.time_stamps.odometry = get_time_usec();
                     this_timestamps.odometry = current_messages.time_stamps.odometry;
 
-                    uint64_t odometryunixreftime = get_unixtimereference(current_messages.odometry.time_usec); //microseconds since system boot
-                    timestampOdometry_ns = boost::lexical_cast<uint64_t>(
-                            std::chrono::duration_cast<std::chrono::nanoseconds>(
-                                    std::chrono::system_clock::now().time_since_epoch()).count());
-
-                    if(bTimeRef) {
-                        pthread_mutex_lock(&mutexOdometry);
-                        queueOdometry.push(current_messages.odometry);
-                        queueOdometrytime.push(timestampOdometry_ns);
-                        queueOdometryUnixRefTime.push(odometryunixreftime);
-                        pthread_cond_signal(&unEmptyOdometry);
-                        pthread_mutex_unlock(&mutexOdometry);
-                    }
-
                     break;
                 }
 
@@ -465,25 +412,8 @@ read_messages() {
                     current_messages.time_stamps.system_time = get_time_usec();
                     this_timestamps.system_time = current_messages.time_stamps.system_time;
 
-                    if (bDynamicTimeRef) {
-                        uint64_t ns = boost::lexical_cast<uint64_t>(
-                                std::chrono::duration_cast<std::chrono::nanoseconds>(
-                                        std::chrono::system_clock::now().time_since_epoch()).count());
-                        odroid_unix_ns_ref = ns;
-                        time_boot_ms_ref = current_messages.system_time.time_boot_ms * 1000;
+                    location_manager->set_time(current_messages.system_time.time_boot_ms, current_messages.system_time.time_unix_usec);
 
-                        cout << "odroid_unix_ns_ref & time_boot_ms_ref are " << ns << " and " << time_boot_ms_ref << endl;
-                        //set_unixtimereference(current_messages.system_time);
-                        bDynamicTimeRef = false;
-
-                    }
-//cout<< "receive system_time message\n";
-                    if (!bTimeRef) {
-//cout<< "signal time ref \n "; 
-                        pthread_mutex_lock(&mutexTimeRef);
-                        pthread_cond_signal(&timeRef);
-                        pthread_mutex_unlock(&mutexTimeRef);
-                    }
                     break;
                 }
                 default: {

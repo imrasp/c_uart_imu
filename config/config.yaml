@@ -7,3 +7,10 @@ system.fps: 20
 system.sec: 20
 system.cameraid: 1 # /dev/video0
 system.gpstime: 1 #use gps time 1:yes 0:no
+
+# 1:yes 0:no
+# position update
+system.slam_position_update: 1
+system.gps_position_update: 1
+
+

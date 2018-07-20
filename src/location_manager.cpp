@@ -4,7 +4,9 @@
 
 #include "location_manager.h"
 
-Location_Manager::Location_Manager(): initializeGeodetic(false) {
+Location_Manager::Location_Manager(bool _update_gps_position, bool _update_slam_position, IMU_Recorder* imu_recorder_): initializeGeodetic(false),
+update_gps_position(_update_gps_position), update_slam_position(_update_slam_position), b_pixhawk_time_ref(false), imu_recorder(imu_recorder_){
+
     geodeticConverter = new geodetic_converter::GeodeticConverter();
     cx = 0;
     cy = 0;
@@ -94,6 +96,56 @@ void Location_Manager::set_global_position(uint32_t timestamp, double lat, doubl
     c_lon = lon;
     c_alt = alt;
     pthread_mutex_unlock(&mutex_globalpose);
+}
+
+void Location_Manager::set_scaled_imu(uint32_t boot_timestamp, int16_t xacc, int16_t yacc, int16_t zacc,
+                                int16_t xgyro, int16_t ygyro, int16_t zgyro ){
+    /**
+      * uint32_t time_boot_ms; ///< Timestamp (milliseconds since system boot)
+      * int16_t xacc; ///< X acceleration (mg)
+      * int16_t yacc; ///< Y acceleration (mg)
+      * int16_t zacc; ///< Z acceleration (mg)
+      * int16_t xgyro; ///< Angular speed around X axis (millirad /sec)
+      * int16_t ygyro; ///< Angular speed around Y axis (millirad /sec)
+      * int16_t zgyro; ///< Angular speed around Z axis (millirad /sec)
+      *
+      * convert acceleration to m/s^2 via
+      * 1 acceleration of gravity (g)  =  9.80665 meter/square second (m/s^2)
+      * 1 milli acceleration of gravity (mg) = 0.00980665 meter/square second (m/s^2)
+      *
+      * convert millirad /sec to rad/sec via
+      * 1 millirad /sec = 1/1000 rad/sec
+     **/
+
+    uint64_t c_timestamp;
+    // convert timestamp to unix time
+    if(b_pixhawk_time_ref){
+        c_timestamp = get_unixtime(boot_timestamp * 1e3);
+    }
+
+    double c_xacc = xacc *  9.80665 * 1e-3;
+    double c_yacc = yacc *  9.80665 * 1e-3;
+    double c_zacc = zacc *  9.80665 * 1e-3;
+
+    double c_xgyro = xgyro * 1e-3;
+    double c_ygyro = ygyro * 1e-3;
+    double c_zgyro = zgyro * 1e-3;
+
+}
+
+void Location_Manager::set_time(uint32_t boot_timestamp, uint64_t unix_timestamp){
+    pixhawk_ms_ref = boot_timestamp;
+    pixhawk_unix_ref = unix_timestamp;
+    b_pixhawk_time_ref = true;
+}
+
+// get microsecond time
+uint64_t Location_Manager::get_unixtime(uint32_t time){
+    if(b_pixhawk_time_ref){
+        uint64_t timestamp_ms = pixhawk_unix_ref + (time - (pixhawk_ms_ref * 1000));
+        return timestamp_ms * 1000;
+    }
+    return 0;
 }
 
 void Location_Manager::stream_global_position(uint32_t timestamp, double lat, double lon, double alt){

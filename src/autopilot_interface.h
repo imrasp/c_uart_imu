@@ -66,6 +66,7 @@
 
 #include <common/mavlink.h>
 #include <queue>
+#include "location_manager.h"
 
 using namespace std;
 // ------------------------------------------------------------------------------
@@ -161,6 +162,7 @@ struct Time_Stamps
 	uint64_t home_position;
 	uint64_t system_time;
 	uint64_t odometry;
+	uint64_t scaled_imu;
 
 	void
 	reset_timestamps()
@@ -178,6 +180,7 @@ struct Time_Stamps
 		home_position = 0;
         system_time = 0;
 		odometry = 0;
+		scaled_imu =0;
 	}
 
 };
@@ -217,6 +220,9 @@ struct Mavlink_Messages {
 	// HiRes IMU
 	mavlink_highres_imu_t highres_imu;
 
+	// Scaled IMU
+	mavlink_scaled_imu_t scaled_imu;
+
 	// Attitude
 	mavlink_attitude_t attitude;
 
@@ -224,10 +230,10 @@ struct Mavlink_Messages {
 	mavlink_odometry_t odometry;
 
 	// Home Position
-    	mavlink_home_position_t home_position;
+	mavlink_home_position_t home_position;
 
 	//extended_sys_state
-    	mavlink_extended_sys_state_t extended_sys_state;
+	mavlink_extended_sys_state_t extended_sys_state;
 
     // System Time
     mavlink_system_time_t system_time;
@@ -269,7 +275,7 @@ class Autopilot_Interface
 
 public:
 	Autopilot_Interface();
-	Autopilot_Interface(Serial_Port *serial_port_);
+	Autopilot_Interface(Serial_Port *serial_port_, Location_Manager *location_manager_);
 	~Autopilot_Interface();
 
 	char reading_status;
@@ -346,6 +352,7 @@ public:
 private:
 
 	Serial_Port *serial_port;
+	Location_Manager *location_manager;
 
 	bool time_to_exit;
 

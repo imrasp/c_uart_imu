@@ -75,6 +75,7 @@ using namespace std;
 #include "serial_port.h"
 #include "configParam.h"
 #include "imu_recorder.h"
+#include "location_manager.h"
 
 
 
@@ -84,7 +85,7 @@ using namespace std;
 
 class Mavlink_Control {
 public:
-    Mavlink_Control(ConfigParam *configParam_, IMU_Recorder *imu_recorder_);
+    Mavlink_Control(ConfigParam *configParam_, IMU_Recorder *imu_recorder_, Location_Manager *location_manager_);
     ~Mavlink_Control();
 
     void start();
@@ -103,6 +104,7 @@ private:
     Autopilot_Interface *autopilot_interface;
     IMU_Recorder *imu_recorder;
     ConfigParam *configParam;
+    Location_Manager *location_manager;
 
     uint64_t unix_time_ref, boot_time_ref;
 };
