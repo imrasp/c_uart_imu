@@ -127,33 +127,8 @@ void Mavlink_Control::start() {
 
     // set time reference for imu data
 
-    while (!autopilot_interface->bTimeRef) {
+    while (location_manager->b_pixhawk_time_ref) {
 
-
-//        pthread_mutex_lock(&autopilot_interface->mutexTimeRef);
-//        pthread_cond_wait(&autopilot_interface->timeRef, &autopilot_interface->mutexTimeRef);
-//        pthread_mutex_unlock(&autopilot_interface->mutexTimeRef);
-//        mavlink_system_time_t sys_time = autopilot_interface->current_messages.system_time;
-//
-//        uint64_t current_unix_time = boost::lexical_cast<uint64_t>(
-//                std::chrono::duration_cast<std::chrono::microseconds>(
-//                        std::chrono::system_clock::now().time_since_epoch()).count());
-//
-//        cout << "waiting for time reference\n";
-//        cout << "current_unix_time(" << current_unix_time <<
-//             ")  - sys_time.time_unix_usec(" << sys_time.time_unix_usec << ") = " <<
-//             abs(current_unix_time - sys_time.time_unix_usec) << "\n";
-//
-//        if (current_unix_time - sys_time.time_unix_usec < 1e7) {
-//            imu_recorder->set_ref_time(autopilot_interface->current_messages.system_time);
-//            imu_recorder->start(autopilot_interface);
-//            cout << "set time referenced = " << autopilot_interface->bTimeRef << "!! \n";
-//            autopilot_interface->bTimeRef = true;
-//        } else if (!configParam->gpstime) {
-//            autopilot_interface->bTimeRef = true;
-//            break;
-//        }
-//        pthread_cond_signal(&autopilot_interface->noTimeRef);
     }
 
 }

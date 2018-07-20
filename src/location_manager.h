@@ -36,6 +36,7 @@ public:
     void stream_global_position(uint32_t timestamp, double lat, double lon, double alt);
 
     uint64_t get_unixtime(uint32_t time);
+    bool b_pixhawk_time_ref;
 private:
     geodetic_converter::GeodeticConverter *geodeticConverter;
 
@@ -48,7 +49,7 @@ private:
     // time reference from pixhawk
     uint32_t pixhawk_ms_ref;
     uint64_t pixhawk_unix_ref;
-    bool b_pixhawk_time_ref;
+
 
     IMU_Recorder* imu_recorder;
 

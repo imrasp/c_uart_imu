@@ -397,22 +397,13 @@ read_messages() {
                     this_timestamps.home_position = current_messages.time_stamps.home_position;
                     break;
                 }
-                //odometry
-                case MAVLINK_MSG_ID_ODOMETRY: { //331
-                    printf("MAVLINK_MSG_ID_ODOMETRY\n");
-                    mavlink_msg_odometry_decode(&message, &(current_messages.odometry));
-                    current_messages.time_stamps.odometry = get_time_usec();
-                    this_timestamps.odometry = current_messages.time_stamps.odometry;
-
-                    break;
-                }
 
                 case MAVLINK_MSG_ID_SYSTEM_TIME: {
                     mavlink_msg_system_time_decode(&message, &(current_messages.system_time));
                     current_messages.time_stamps.system_time = get_time_usec();
                     this_timestamps.system_time = current_messages.time_stamps.system_time;
 
-                    location_manager->set_time(current_messages.system_time.time_boot_ms, current_messages.system_time.time_unix_usec);
+//                    location_manager->set_time(current_messages.system_time.time_boot_ms, current_messages.system_time.time_unix_usec);
 
                     break;
                 }
