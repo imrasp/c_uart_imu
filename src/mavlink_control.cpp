@@ -127,9 +127,9 @@ void Mavlink_Control::start() {
 
     // set time reference for imu data
 
-    while (location_manager->b_pixhawk_time_ref) {
-
-    }
+//    while (location_manager->b_pixhawk_time_ref) {
+//
+//    }
 
 }
 
