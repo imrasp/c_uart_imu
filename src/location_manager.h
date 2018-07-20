@@ -37,6 +37,7 @@ public:
 
     uint64_t get_unixtime(uint32_t time);
     bool b_pixhawk_time_ref;
+
 private:
     geodetic_converter::GeodeticConverter *geodeticConverter;
 
