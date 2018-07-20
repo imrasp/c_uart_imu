@@ -29,8 +29,9 @@ int main(int argc, char **argv) {
         Location_Manager* location_manager = new Location_Manager((bool)configParam.gps_position_update, (bool)configParam.slam_position_update, imu_recorder);
 
         if(bIMU)
-        {mavlinkControl = new Mavlink_Control(&configParam, imu_recorder, location_manager);
-        imu_recorder->write_imu_from_queue();
+        {
+            mavlinkControl = new Mavlink_Control(&configParam, imu_recorder, location_manager);
+            imu_recorder->start();
         }
         if(bCamera) cameraRecorder = new Camera_Recorder(&configParam, true);
         if(bIMU) mavlinkControl->start();
