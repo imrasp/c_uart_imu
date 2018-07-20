@@ -371,7 +371,7 @@ read_messages() {
                 }
 
                 case MAVLINK_MSG_ID_SCALED_IMU: {
-                    printf("MAVLINK_MSG_ID_HIGHRES_IMU\n");
+                    printf("MAVLINK_MSG_ID_SCALED_IMU\n");
                     mavlink_msg_scaled_imu_decode(&message, &(current_messages.scaled_imu));
                     current_messages.time_stamps.scaled_imu = get_time_usec();
                     this_timestamps.scaled_imu = current_messages.time_stamps.scaled_imu;
