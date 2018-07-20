@@ -371,12 +371,18 @@ read_messages() {
                 }
 
                 case MAVLINK_MSG_ID_SCALED_IMU: {
-                    //printf("MAVLINK_MSG_ID_HIGHRES_IMU\n");
+                    printf("MAVLINK_MSG_ID_HIGHRES_IMU\n");
                     mavlink_msg_scaled_imu_decode(&message, &(current_messages.scaled_imu));
                     current_messages.time_stamps.scaled_imu = get_time_usec();
                     this_timestamps.scaled_imu = current_messages.time_stamps.scaled_imu;
 
-
+                    location_manager->set_scaled_imu(current_messages.scaled_imu.time_boot_ms,
+                                                     current_messages.scaled_imu.xacc,
+                                                     current_messages.scaled_imu.yacc,
+                                                     current_messages.scaled_imu.zacc,
+                                                     current_messages.scaled_imu.xgyro,
+                                                     current_messages.scaled_imu.ygyro,
+                                                     current_messages.scaled_imu.zgyro);
 
                     break;
                 }
