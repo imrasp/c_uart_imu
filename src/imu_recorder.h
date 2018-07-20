@@ -7,6 +7,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <common/mavlink.h>
+#include <queue>
 #include "configParam.h"
 
 #ifndef C_UART_INTERFACE_EXAMPLE_IMU_RECORDER_H
