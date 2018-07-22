@@ -28,6 +28,8 @@ public:
     void set_global_position(uint32_t timestamp, double lat, double lon, double alt);
     void set_time(uint32_t boot_timestamp, uint64_t unix_timestamp);
     void set_scaled_imu(uint32_t boot_timestamp, int16_t xacc, int16_t yacc, int16_t zacc, int16_t xgyro, int16_t ygyro, int16_t zgyro );
+    void set_highres_imu(uint64_t boot_timestamp, float xacc, float yacc, float zacc, float xgyro,
+                                        float ygyro, float zgyro);
     bool isGeodeticInitialize();
 
     double distanceInKmBetweenEarthCoordinates(double lat1, double lon1, double lat2, double lon2);
@@ -52,7 +54,7 @@ private:
     uint64_t pixhawk_unix_ref;
 
 
-    IMU_Recorder* imu_recorder;
+    IMU_Recorder* imu_recorder, *imu_recorder_highres, *imu_recorder_scaled;
 
     pthread_mutex_t mutex_localpose, mutex_globalpose;
 };

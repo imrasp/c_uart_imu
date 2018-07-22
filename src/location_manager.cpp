@@ -24,6 +24,10 @@ Location_Manager::Location_Manager(bool _update_gps_position, bool _update_slam_
 
     time_to_exit = false;
     boost::thread threadInitialGeodetic = boost::thread(&Location_Manager::set_initial_geodetic_pose, this);
+    imu_recorder_highres = new IMU_Recorder("highres_imu0.csv");
+    imu_recorder_highres->start();
+    imu_recorder_scaled = new IMU_Recorder("scaled_imu0.csv");
+    imu_recorder_scaled->start();
 }
 
 Location_Manager::~Location_Manager() {
@@ -100,6 +104,17 @@ void Location_Manager::set_global_position(uint32_t timestamp, double lat, doubl
     pthread_mutex_unlock(&mutex_globalpose);
 }
 
+void Location_Manager::set_highres_imu(uint64_t boot_timestamp, float xacc, float yacc, float zacc, float xgyro,
+                                       float ygyro, float zgyro) {
+    uint64_t c_timestamp;
+    if (b_pixhawk_time_ref) c_timestamp = get_unixtime(boot_timestamp);
+    else c_timestamp = boot_timestamp;
+
+    imu_recorder_highres->
+            add_imu_to_queue(c_timestamp, xacc, yacc, zacc, xgyro, ygyro, zgyro
+    );
+
+}
 void Location_Manager::set_scaled_imu(uint32_t boot_timestamp, int16_t xacc, int16_t yacc, int16_t zacc, int16_t xgyro,
                                       int16_t ygyro, int16_t zgyro) {
     /**
@@ -119,10 +134,12 @@ void Location_Manager::set_scaled_imu(uint32_t boot_timestamp, int16_t xacc, int
       * 1 millirad /sec = 1/1000 rad/sec
      **/
 
+//    std::cout << "boot_timestamp is " << boot_timestamp << std::endl;
     uint64_t c_timestamp;
     // convert timestamp to unix time
     if (b_pixhawk_time_ref) c_timestamp = get_unixtime(boot_timestamp * 1e3);
-    else c_timestamp = b_pixhawk_time_ref;
+    else c_timestamp = boot_timestamp * 1e3;
+//    std::cout << "c_time is " << c_timestamp << std::endl;
 
     double c_xacc = xacc * 9.80665 * 1e-3;
     double c_yacc = yacc * 9.80665 * 1e-3;
@@ -134,6 +151,9 @@ void Location_Manager::set_scaled_imu(uint32_t boot_timestamp, int16_t xacc, int
 
     imu_recorder->
             add_imu_to_queue(c_timestamp, c_xacc, c_yacc, c_zacc, c_xgyro, c_ygyro, c_zgyro
+    );
+    imu_recorder_scaled->
+            add_imu_to_queue(c_timestamp, xacc, yacc, zacc, xgyro, ygyro, zgyro
     );
 
 }
@@ -149,8 +169,7 @@ uint64_t Location_Manager::get_unixtime(uint32_t time) {
     if (b_pixhawk_time_ref) {
         uint64_t timestamp_ms = pixhawk_unix_ref + (time - (pixhawk_ms_ref * 1000));
         return timestamp_ms * 1000;
-    }
-    return 0;
+    } else return 0;
 }
 
 void Location_Manager::stream_global_position(uint32_t timestamp, double lat, double lon, double alt) {

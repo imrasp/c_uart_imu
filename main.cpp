@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
         ConfigParam configParam(argc, argv);
         std::cout << "\nCreating log folder \n";
         Log log(configParam.record_path);
-        if (bIMU) imu_recorder = new IMU_Recorder(&configParam, true);
+        if (bIMU) imu_recorder = new IMU_Recorder("imu0.csv");
 
         Location_Manager *location_manager = new Location_Manager((bool) configParam.gps_position_update,
                                                                   (bool) configParam.slam_position_update,

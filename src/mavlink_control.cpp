@@ -117,13 +117,6 @@ void Mavlink_Control::start() {
     serial_port->start();
     autopilot_interface->start();
 
-    // --------------------------------------------------------------------------
-    //   RUN INITIAL COMMANDS
-    // --------------------------------------------------------------------------
-    mavlink_set_position_target_local_ned_t sp;
-    mavlink_set_position_target_local_ned_t ip = autopilot_interface->
-            initial_position;
-    autopilot_interface->update_setpoint(sp);
 
     // set time reference for imu data
 
@@ -139,14 +132,41 @@ void Mavlink_Control::cmd() {
     // --------------------------------------------------------------------------
     autopilot_interface->enable_offboard_control();
 
-    autopilot_interface->arm_control();
+    // --------------------------------------------------------------------------
+    //   RUN INITIAL COMMANDS
+    // --------------------------------------------------------------------------
+    mavlink_set_position_target_local_ned_t sp;
+    mavlink_set_position_target_local_ned_t ip = autopilot_interface->
+            initial_position;
+    set_position( ip.x , // [m]
+                  ip.y , // [m]
+                  ip.z , // [m]
+                  sp         );
+    autopilot_interface->update_setpoint(sp);
+
+//    autopilot_interface->arm_control();
 
     usleep(100); // give some time to let it sink in
-    cout << " waiting for " << configParam->sec << " sec.\n";
-    // stack imu in queue for 60 seconds
-    sleep(configParam->sec);
+//    cout << " waiting for " << configParam->sec << " sec.\n";
+//    // stack imu in queue for 60 seconds
+//    sleep(configParam->sec);
+//
+    cout << "start 1 hr record \n";
+    sleep(3600);
+    cout << "start 2 hr record \n";
+    sleep(3600);
+    cout << "start 3 hr record \n";
+    sleep(3600);
+    cout << "start 4 hr record \n";
+    sleep(3600);
+    sleep(20);
+//    cout << "move \n";
+//    sleep(30);
+    cout << "Finish cmd \n";
 
-    autopilot_interface->disarm_control();
+
+
+//    autopilot_interface->disarm_control();
 
 // --------------------------------------------------------------------------
 //   STOP OFFBOARD MODE

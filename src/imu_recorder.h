@@ -19,7 +19,7 @@ struct imu_data{
 
 class IMU_Recorder{
 public:
-    IMU_Recorder(ConfigParam *configParam_, bool activate);
+    IMU_Recorder(string filename);
     ~IMU_Recorder();
 
     void start();
@@ -38,7 +38,7 @@ private:
     pthread_mutex_t mutexIMU;
     // queue for struc imu
     std::queue<imu_data> queueIMU;
-
+    string filename;
     bool active;
     bool time_to_exit;
 
