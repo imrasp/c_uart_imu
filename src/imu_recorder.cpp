@@ -71,8 +71,7 @@ void IMU_Recorder::write_imu_from_queue() {
         std::cout << "";
 //        pthread_mutex_lock(&mutexIMU);
         if (!queueIMU.empty()) {
-//            pthread_cond_wait(&unEmptyIMU, &mutexIMU);
-//
+
             datasetimu << queueIMU.front().timestamp << sep
                        << queueIMU.front().xgyro << sep
                        << queueIMU.front().ygyro << sep
@@ -82,7 +81,7 @@ void IMU_Recorder::write_imu_from_queue() {
                        << queueIMU.front().zacc << endl;
 
             queueIMU.pop();
-        }
+        } else pthread_cond_wait(&unEmptyIMU, &mutexIMU);
     }
     datasetimu.close();
 }

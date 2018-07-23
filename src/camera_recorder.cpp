@@ -3,14 +3,8 @@
 //
 #include "camera_recorder.h"
 
-Camera_Recorder::Camera_Recorder(ConfigParam *configParam_, bool bViewer_):configParam(configParam_), bViewer(bViewer_){
-
-}
-
-Camera_Recorder::~Camera_Recorder() {}
-
-void Camera_Recorder::initializeCamera() {
-    stream1 = cv::VideoCapture(configParam->cameraid);
+Camera_Recorder::Camera_Recorder(int camid, bool bViewer_): bViewer(bViewer_){
+    stream1 = cv::VideoCapture(camid);
 //    query_maximum_resolution(&stream1, max_width, max_height);
 //    max_width = 1280; max_height = 720;
 //    max_width = 640; max_height = 480;
@@ -18,6 +12,11 @@ void Camera_Recorder::initializeCamera() {
 
     lframe.open("./record_data/frame.csv");
     lframe << "timestamp" << "\n";
+}
+
+Camera_Recorder::~Camera_Recorder() {
+    stop();
+
 }
 
 //find maximum resolution
@@ -95,28 +94,24 @@ void Camera_Recorder::cameraRecord() {
     uint64_t timestampcamera;
 
     while (!time_to_exit) {
-//        if (matFrameForward.cols != max_width) continue;
+        std::cout << "";
 
-        int OldPrio = 0;
-        pthread_mutex_setprioceiling(&_mutexFrameCam1Last, 0, &OldPrio);
-        pthread_mutex_lock(&_mutexFrameCam1Last);
-        while (qFrame.empty()) {
+        if (qFrame.empty()) {
+            pthread_mutex_lock(&_mutexFrameCam1Last);
             pthread_cond_wait(&frameQueueCondNotempty, &_mutexFrameCam1Last);
-        }
-        recFrameForward = qFrame.front();
-        timestampcamera = qTime.front();
-        qFrame.pop();
-        qTime.pop();
-        if(qFrame.empty()) {
-            pthread_cond_signal(&frameQueueCondEmpty);
-        }
-        pthread_mutex_unlock(&_mutexFrameCam1Last);
+            pthread_mutex_unlock(&_mutexFrameCam1Last);
+        } else {
+            recFrameForward = qFrame.front();
+            timestampcamera = qTime.front();
+            qFrame.pop();
+            qTime.pop();
 
-        imwrite("./record_data/cam0/" + std::to_string(timestampcamera) + ".png", recFrameForward);
-        lframe << timestampcamera << "\n";
-        totalRecord++;
+            imwrite("./record_data/cam0/" + std::to_string(timestampcamera) + ".png", recFrameForward);
+            lframe << timestampcamera << "\n";
+            totalRecord++;
 
-        recFrameForward.copyTo(lastestFrameForward);
+            recFrameForward.copyTo(lastestFrameForward);
+        }
 
     }
     std::cout << "#Record = " << totalRecord << std::endl;

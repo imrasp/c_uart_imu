@@ -24,7 +24,7 @@
 
 class Camera_Recorder {
 public:
-    Camera_Recorder(ConfigParam *configParam_, bool bViewer_);
+    Camera_Recorder(int camid, bool bViewer_);
     ~Camera_Recorder();
 
     void initializeCamera();

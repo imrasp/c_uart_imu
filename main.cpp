@@ -11,7 +11,7 @@ using namespace std;
 int main(int argc, char **argv);
 
 int main(int argc, char **argv) {
-    bool bCamera = false;
+    bool bCamera = true;
     bool bIMU = true;
     bool bSLAM = false;
 
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
             mavlinkControl = new Mavlink_Control(&configParam, imu_recorder, location_manager);
             imu_recorder->start();
         }
-        if (bCamera) cameraRecorder = new Camera_Recorder(&configParam, true);
+        if (bCamera) cameraRecorder = new Camera_Recorder(configParam.cameraid, true);
         if (bIMU) mavlinkControl->start();
         if (bCamera) cameraRecorder->start();
         if (bIMU) mavlinkControl->cmd();
