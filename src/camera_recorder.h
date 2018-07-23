@@ -49,6 +49,8 @@ public:
 private:
     ConfigParam *configParam;
 
+    int camid;
+    
     boost::thread threadCamera, threadRecord;
     pthread_mutex_t _mutexFrameCam1Last = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t frameQueueCondNotempty = PTHREAD_COND_INITIALIZER;

@@ -3,21 +3,25 @@
 //
 #include "camera_recorder.h"
 
-Camera_Recorder::Camera_Recorder(int camid, bool bViewer_): bViewer(bViewer_){
-    stream1 = cv::VideoCapture(camid);
-//    query_maximum_resolution(&stream1, max_width, max_height);
-//    max_width = 1280; max_height = 720;
-//    max_width = 640; max_height = 480;
-    max_width = 848; max_height = 480;
+Camera_Recorder::Camera_Recorder(int camid_, bool bViewer_): camid(camid_), bViewer(bViewer_){
 
-    lframe.open("./record_data/frame.csv");
-    lframe << "timestamp" << "\n";
 }
 
 Camera_Recorder::~Camera_Recorder() {
     stop();
 
 }
+
+void Camera_Recorder::initializeCamera(){
+        stream1 = cv::VideoCapture(camid);
+//    query_maximum_resolution(&stream1, max_width, max_height);
+//    max_width = 1280; max_height = 720;
+//    max_width = 640; max_height = 480;
+        max_width = 848; max_height = 480;
+
+        lframe.open("./record_data/frame.csv");
+        lframe << "timestamp" << "\n";
+};
 
 //find maximum resolution
 void Camera_Recorder::query_maximum_resolution(cv::VideoCapture *camera, int &max_width, int &max_height) {
